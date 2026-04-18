@@ -1,0 +1,107 @@
+package com.futbol.scraping.init;
+
+import com.futbol.scraping.model.Player;
+import com.futbol.scraping.model.PlayerToken;
+import com.futbol.scraping.model.User;
+import com.futbol.scraping.repository.PlayerRepository;
+import com.futbol.scraping.repository.PlayerTokenRepository;
+import com.futbol.scraping.repository.UserRepository;
+import com.futbol.scraping.service.QuoteService;
+import com.futbol.scraping.service.ScrapingService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class DataInitializer implements ApplicationRunner {
+
+    private final UserRepository userRepository;
+    private final PlayerRepository playerRepository;
+    private final PlayerTokenRepository playerTokenRepository;
+    private final ScrapingService scrapingService;
+    private final QuoteService quoteService;
+
+    @Value("${app.superuser.username:superuser}")
+    private String superuserUsername;
+
+    @Value("${app.superuser.email:superuser@futbol.com}")
+    private String superuserEmail;
+
+    @Value("${app.superuser.initial-balance:1000000}")
+    private BigDecimal superuserInitialBalance;
+
+    @Value("${app.tokens-per-player:100}")
+    private int tokensPerPlayer;
+
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
+        log.info("DataInitializer starting...");
+
+        User superuser = createSuperuserIfNeeded();
+
+        long playerCount = playerRepository.count();
+        if (playerCount == 0) {
+            log.info("No players found in database, syncing from external sources...");
+            int synced = scrapingService.syncAllLeagues();
+            log.info("Initial sync complete: {} players added", synced);
+        } else {
+            log.info("Database already has {} players, skipping initial sync", playerCount);
+        }
+
+        allocateTokensToSuperuser(superuser);
+
+        if (playerRepository.count() > 0) {
+            log.info("Calculating initial quotes...");
+            try {
+                quoteService.recalculate();
+            } catch (Exception e) {
+                log.error("Failed to calculate initial quotes: {}", e.getMessage());
+            }
+        }
+
+        log.info("DataInitializer complete.");
+    }
+
+    private User createSuperuserIfNeeded() {
+        return userRepository.findByUsername(superuserUsername).orElseGet(() -> {
+            log.info("Creating superuser: {}", superuserUsername);
+            User superuser = User.builder()
+                    .username(superuserUsername)
+                    .email(superuserEmail)
+                    .balance(superuserInitialBalance)
+                    .isSuperuser(true)
+                    .build();
+            return userRepository.save(superuser);
+        });
+    }
+
+    private void allocateTokensToSuperuser(User superuser) {
+        List<Player> players = playerRepository.findAll();
+        int allocated = 0;
+        for (Player player : players) {
+            if (playerTokenRepository.findByPlayerAndUser(player, superuser).isEmpty()) {
+                PlayerToken token = PlayerToken.builder()
+                        .player(player)
+                        .user(superuser)
+                        .quantity(tokensPerPlayer)
+                        .avgBuyPrice(BigDecimal.ONE)
+                        .build();
+                playerTokenRepository.save(token);
+                allocated++;
+            }
+        }
+        if (allocated > 0) {
+            log.info("Allocated {} token positions to superuser", allocated);
+        }
+    }
+}

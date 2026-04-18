@@ -11,6 +11,32 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=300s
 
 server:
   port: ${SERVER_PORT:8080}
+
+football-data:
+  api:
+    base-url: https://api.football-data.org/v4
+    api-key: ${FOOTBALL_DATA_API_KEY:demo}
+
+whoscored:
+  base-url: https://www.whoscored.com
+
+app:
+  superuser:
+    username: superuser
+    email: superuser@futbol.com
+    initial-balance: 1000000
+  tokens-per-player: 100
+  initial-token-price: 1.00
+  quote:
+    base-value: 100.0
+    scale-factor: 500.0
+  scheduling:
+    enabled: true
+    cron: "0 0 0 * * MON"
