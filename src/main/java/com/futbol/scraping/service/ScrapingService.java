@@ -81,7 +81,7 @@ public class ScrapingService {
     private List<PlayerStatsDTO> getFallbackPlayers(String league) {
         return switch (league) {
             case "Premier League" -> List.of(
-                PlayerStatsDTO.builder().whoscoredId("ws-83532").name("Harry Kane").team("Bayern Munich").league(league).position("FW").nationality("England").age(31).appearances(28).goals(22).assists(8).url("https://www.whoscored.com/players/83532/matchstatistics/harry-kane").build(),
+                PlayerStatsDTO.builder().whoscoredId("ws-83532").name("Harry Kane").team("Tottenham Hotspur").league(league).position("FW").nationality("England").age(31).appearances(28).goals(22).assists(8).url("https://www.whoscored.com/players/83532/matchstatistics/harry-kane").build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-pl-2").name("Mohamed Salah").team("Liverpool").league(league).position("FW").nationality("Egypt").age(32).appearances(30).goals(18).assists(10).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-pl-3").name("Erling Haaland").team("Manchester City").league(league).position("FW").nationality("Norway").age(24).appearances(27).goals(20).assists(4).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-pl-4").name("Bukayo Saka").team("Arsenal").league(league).position("MF").nationality("England").age(23).appearances(30).goals(12).assists(11).build(),
@@ -107,13 +107,13 @@ public class ScrapingService {
             );
             case "Serie A" -> List.of(
                 PlayerStatsDTO.builder().whoscoredId("ws-sa-1").name("Lautaro Martinez").team("Inter Milan").league(league).position("FW").nationality("Argentina").age(27).appearances(30).goals(20).assists(7).build(),
-                PlayerStatsDTO.builder().whoscoredId("ws-sa-2").name("Khvicha Kvaratskhelia").team("Paris Saint-Germain").league(league).position("FW").nationality("Georgia").age(23).appearances(27).goals(11).assists(9).build(),
+                PlayerStatsDTO.builder().whoscoredId("ws-sa-2").name("Khvicha Kvaratskhelia").team("Napoli").league(league).position("FW").nationality("Georgia").age(23).appearances(27).goals(11).assists(9).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-sa-3").name("Marcus Thuram").team("Inter Milan").league(league).position("FW").nationality("France").age(27).appearances(29).goals(14).assists(10).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-sa-4").name("Dusan Vlahovic").team("Juventus").league(league).position("FW").nationality("Serbia").age(24).appearances(26).goals(15).assists(3).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-sa-5").name("Nicolo Barella").team("Inter Milan").league(league).position("MF").nationality("Italy").age(27).appearances(30).goals(5).assists(9).build()
             );
             case "Ligue 1" -> List.of(
-                PlayerStatsDTO.builder().whoscoredId("ws-300713").name("Kylian Mbappé").team("Paris Saint-Germain").league(league).position("FW").nationality("France").age(26).appearances(29).goals(27).assists(7).url("https://www.whoscored.com/players/300713/matchstatistics/kylian-mbappé").build(),
+                PlayerStatsDTO.builder().whoscoredId("ws-300713").name("Kylian Mbappé").team("Real Madrid").league(league).position("FW").nationality("France").age(26).appearances(29).goals(27).assists(7).url("https://www.whoscored.com/players/300713/matchstatistics/kylian-mbappé").build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-l1-2").name("Alexandre Lacazette").team("Lyon").league(league).position("FW").nationality("France").age(33).appearances(28).goals(17).assists(5).build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-234364").name("Ludovic Ajorque").team("Strasbourg").league(league).position("FW").nationality("France").age(30).appearances(26).goals(12).assists(4).url("https://www.whoscored.com/players/234364/matchstatistics/ludovic-ajorque").build(),
                 PlayerStatsDTO.builder().whoscoredId("ws-l1-4").name("Jonathan David").team("Lille").league(league).position("FW").nationality("Canada").age(24).appearances(29).goals(20).assists(6).build(),
