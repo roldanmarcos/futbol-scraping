@@ -1,0 +1,287 @@
+================================================================================
+      DOCUMENTACIÓN TÉCNICA DETALLADA — futbol-scraping
+================================================================================
+
+Fecha: 2026-04-18
+Repositorio: roldanmarcos/futbol-scraping
+
+--------------------------------------------------------------------------------
+TECNOLOGÍAS Y STACK
+--------------------------------------------------------------------------------
+El proyecto es una API REST con Spring Boot 3.3.4 / Java 21, conectada a una
+base de datos PostgreSQL. Las librerías principales son:
+
+  - Spring Data JPA     → persistencia con Hibernate
+  - Lombok              → reducción de boilerplate (getters, builders, logs)
+  - Caffeine            → caché en memoria
+  - Jsoup               → scraping HTML
+  - Spring Retry        → reintentos automáticos ante fallos de APIs externas
+  - Spring Scheduling   → jobs automáticos periódicos
+
+--------------------------------------------------------------------------------
+1. ESTRUCTURA DE CAPAS
+--------------------------------------------------------------------------------
+  web/          → Controllers (entrada HTTP)
+  service/      → Lógica de negocio
+  repository/   → Acceso a base de datos (JPA)
+  adapter/      → Integración con APIs externas
+  strategy/     → Algoritmos de valuación
+  model/        → Entidades JPA
+  dto/          → Objetos de transferencia de datos
+  init/         → Inicialización al arrancar
+  scheduler/    → Jobs automáticos
+  exception/    → Manejo de errores
+  config/       → Configuración de beans
+
+--------------------------------------------------------------------------------
+2. MODELO DE DATOS
+--------------------------------------------------------------------------------
+
+Player — jugador
+  Almacena datos básicos: nombre, liga, equipo, posición, nacionalidad, edad,
+  apariciones, goles, asistencias. Tiene un campo whoscoredId como identificador
+  externo único, usado para evitar duplicados al sincronizar.
+
+PlayerQuote — cotización
+  Cada vez que se recalcula el valor de un jugador, se guarda una fila nueva en
+  esta tabla. Guarda: el jugador, el valor calculado, la fecha, la versión de la
+  estrategia usada, y el score base. Esto permite consultar el historial
+  completo de cotizaciones.
+
+PlayerToken — posición de tokens
+  Representa cuántos tokens de un jugador tiene un usuario. Tiene constraint
+  UNIQUE(player_id, user_id), es decir, una fila por par jugador/usuario. Guarda
+  además el precio promedio de compra (avgBuyPrice), que se recalcula con cada
+  compra adicional.
+
+Transaction — historial de operaciones
+  Registro inmutable de cada compra o venta. Guarda: usuario, jugador, tipo
+  (BUY/SELL), cantidad, precio por token, monto total y fecha.
+
+User — usuario
+  Tiene balance (saldo en créditos), email, username y un flag isSuperuser. El
+  superusuario es el dueño inicial de todos los tokens.
+
+--------------------------------------------------------------------------------
+3. INICIALIZACIÓN AL ARRANCAR (DataInitializer)
+--------------------------------------------------------------------------------
+Al iniciar la aplicación, se ejecutan estos pasos en orden:
+
+  1. Crear el superusuario si no existe
+     (username: superuser, balance inicial: 1.000.000 créditos, isSuperuser=true)
+
+  2. Sincronizar jugadores: si la base de datos no tiene jugadores, se llama a
+     ScrapingService.syncAllLeagues() para poblarla.
+
+  3. Asignar tokens: para cada jugador, si el superusuario no tiene una posición
+     creada, se le asignan 100 tokens a precio base de 1 crédito.
+
+  4. Calcular cotizaciones iniciales: se dispara un recálculo para que todos los
+     jugadores tengan una cotización desde el primer momento.
+
+--------------------------------------------------------------------------------
+4. FUENTES DE DATOS EXTERNAS (adapters/)
+--------------------------------------------------------------------------------
+
+FootballDataAdapter
+  Consume la API REST de football-data.org. Llama al endpoint
+  /competitions/{code}/scorers para obtener los máximos goleadores de cada liga.
+  Mapea los datos a PlayerStatsDTO. Tiene retry automático (hasta 3 intentos con
+  backoff de 2 segundos) ante fallos de red.
+
+WhoScoredAdapter
+  Intenta hacer scraping HTML de WhoScored usando Jsoup. WhoScored usa JavaScript
+  intensivamente, lo que hace que Jsoup (que no ejecuta JS) frecuentemente no
+  pueda obtener los datos de la tabla de estadísticas. Por eso está diseñado como
+  fuente secundaria con fallback gracioso: si el parsing falla, retorna lista
+  vacía sin lanzar excepción.
+
+Fallback con datos curados (ScrapingService.getFallbackPlayers)
+  Si ambas fuentes externas fallan (sin API key, bloqueados, etc.), el sistema
+  carga datos estáticos de jugadores reales conocidos para cada liga. Esto
+  garantiza que la aplicación siempre tenga datos para demostrar funcionalidad.
+  Los datos incluyen a jugadores como Mbappé, Kane, Vinicius Jr, Haaland,
+  Lewandowski, entre otros.
+
+Flujo de prioridad:
+  Football-Data.org  →  WhoScored (scraping)  →  Datos curados internos
+
+--------------------------------------------------------------------------------
+5. SISTEMA DE COTIZACIÓN — PATRÓN STRATEGY
+--------------------------------------------------------------------------------
+Se define la interfaz ValuationStrategy con tres métodos:
+  calculate(Player), getVersion(), getDescription()
+
+Hay dos implementaciones:
+
+--- PerformanceBasedStrategy (performance-v1.0) ---
+
+Es la estrategia general. Calcula un score normalizado con esta fórmula:
+
+  score = 0.25 × goals + 0.15 × assists + 0.10 × shots + 0.10 × keyPasses
+        + 0.10 × dribbles + 0.10 × tackles + 0.20 × rating
+
+Cada métrica se normaliza a [0,1] antes de aplicar el peso:
+  - goals/game  ÷ 1.0   (máximo teórico: 1 gol por partido)
+  - shots/game  ÷ 5.0   (máximo razonable: 5 tiros por partido)
+  - rating      ÷ 10.0
+  - etc.
+
+Como la API externa no devuelve todas las métricas (tiros, regates, etc.),
+éstas se estiman en base a la posición y a los goles/asistencias disponibles.
+Por ejemplo, para un delantero se estima:
+  shotsPerGame = goalsPerGame * 4 + 2
+
+El rating se estima como:
+  rating = 6.5 + goalsPerGame + 0.5 * assistsPerGame  (techo: 10)
+
+Finalmente:
+  valor = baseValue + (score × scaleFactor)
+  Con valores por defecto (baseValue=100, scaleFactor=500):
+  rango resultante → entre 100 y 600 créditos.
+
+--- PositionWeightedStrategy (position-weighted-v1.0) ---
+
+Usa los mismos datos pero cambia los pesos según la posición del jugador:
+
+  Métrica       FW     MF     DF     GK
+  ─────────────────────────────────────
+  Goles         0.35   0.15   0.05   0.00
+  Asistencias   0.15   0.25   0.05   0.00
+  Tiros         0.20   0.10   0.05   0.00
+  Pases clave   0.10   0.25   0.10   0.05
+  Tackles       0.05   0.15   0.40   0.15
+  Apariciones   0.15   0.10   0.35   0.80
+
+Esto hace que un arquero sea valuado casi enteramente por su regularidad
+(apariciones), mientras que un delantero se valúa principalmente por goles y
+tiros.
+
+Cambio de estrategia en caliente:
+  QuoteService tiene un campo activeStrategy que se puede cambiar llamando:
+  POST /quotes/recalculate?strategy=positionWeighted
+  El nombre de la estrategia usada se guarda en cada PlayerQuote, dejando
+  trazabilidad completa.
+
+--------------------------------------------------------------------------------
+6. MERCADO DE TOKENS (OrderService)
+--------------------------------------------------------------------------------
+
+Compra  →  POST /orders/buy
+  El flujo completo dentro de una transacción atómica:
+  1. Valida que la cantidad sea positiva.
+  2. Busca jugador, comprador y superusuario.
+  3. Obtiene el precio actual (última cotización guardada).
+  4. Bloqueo pesimista (SELECT ... FOR UPDATE) sobre la fila de tokens del
+     superusuario para evitar condiciones de carrera.
+  5. Verifica que el superusuario tenga suficientes tokens disponibles.
+  6. Verifica que el comprador tenga suficiente saldo.
+  7. Descuenta tokens del superusuario.
+  8. Suma tokens al comprador (si ya tenía posición, recalcula precio promedio).
+  9. Descuenta el saldo del comprador.
+  10. Registra la transacción.
+
+  Cálculo del precio promedio ponderado:
+    newAvg = (precioAnterior × cantAnterior + precioNuevo × cantNueva)
+             ÷ (cantAnterior + cantNueva)
+
+Venta  →  POST /orders/sell
+  El flujo inverso:
+  1. Bloqueo pesimista sobre los tokens del vendedor.
+  2. Verifica que tenga suficientes tokens.
+  3. Descuenta tokens del vendedor.
+  4. Devuelve tokens al superusuario (para que puedan volver a circular).
+  5. Acredita el saldo del vendedor al precio actual.
+  6. Registra la transacción.
+
+--------------------------------------------------------------------------------
+7. PORTFOLIO (UserService)
+--------------------------------------------------------------------------------
+GET /users/:id/portfolio devuelve para cada posición del usuario:
+  - Cantidad de tokens
+  - Precio promedio de compra
+  - Precio actual (última cotización)
+  - Valor total invertido vs. valor actual
+  - Ganancia/pérdida en créditos y en porcentaje
+
+A nivel total también se muestra la rentabilidad global del portfolio.
+
+--------------------------------------------------------------------------------
+8. CACHÉ (Caffeine)
+--------------------------------------------------------------------------------
+Se aplica @Cacheable en:
+  - players       → lista de jugadores (con filtros)
+  - playerDetail  → detalle por ID
+  - quotes        → historial de cotizaciones por jugador
+  - ranking       → ranking calculado
+
+Configuración:
+  - expireAfterWrite = 300 segundos (5 minutos)
+  - Capacidad máxima = 500 entradas
+
+Al recalcular cotizaciones o guardar jugadores se ejecuta @CacheEvict para
+invalidar la caché correspondiente.
+
+--------------------------------------------------------------------------------
+9. SCHEDULER AUTOMÁTICO (QuoteScheduler)
+--------------------------------------------------------------------------------
+Dos jobs configurables:
+  - Lunes a las 00:00     → recalcula cotizaciones con la estrategia activa
+  - Domingos a las 22:00  → sincroniza datos de fuentes externas
+
+El scheduling se puede desactivar con:
+  app.scheduling.enabled=false  (en application.yml)
+
+--------------------------------------------------------------------------------
+10. MANEJO DE ERRORES (GlobalExceptionHandler)
+--------------------------------------------------------------------------------
+Tres niveles de manejo con @RestControllerAdvice:
+  - ResourceNotFoundException  → HTTP 404, mensaje descriptivo
+  - BusinessException          → HTTP 400, error de negocio
+                                 (saldo insuficiente, tokens insuficientes, etc.)
+  - Exception genérica         → HTTP 500, sin exponer detalles internos
+
+Todos los errores se loguean y devuelven un JSON con "error" y "timestamp".
+
+--------------------------------------------------------------------------------
+11. APIs EXPUESTAS
+--------------------------------------------------------------------------------
+Método   Endpoint                    Descripción
+───────────────────────────────────────────────────────────────────────────────
+GET      /players                    Lista jugadores; filtros: ?league= ?team= ?position=
+GET      /players/ranking            Ranking ordenado por score de la estrategia activa
+GET      /players/:id                Detalle del jugador + últimas 10 cotizaciones
+GET      /players/:id/quotes         Historial completo; ?date= para punto en el tiempo
+POST     /quotes/recalculate         Recálculo manual; ?strategy= para cambiar estrategia
+POST     /orders/buy                 Compra tokens (playerId, buyerId, quantity)
+POST     /orders/sell                Vende tokens (playerId, sellerId, quantity)
+GET      /users/:id/portfolio        Portfolio con P&L por jugador
+GET      /users/:id/transactions     Historial de operaciones del usuario
+POST     /users                      Crear usuario (username, email, balance)
+POST     /sync/players               Fuerza sincronización externa; ?league= para una liga
+GET      /health                     Estado de la aplicación
+
+--------------------------------------------------------------------------------
+DECISIONES DE DISEÑO DESTACADAS
+--------------------------------------------------------------------------------
+1. Idempotencia en sincronización:
+   saveOrUpdatePlayer busca por whoscoredId antes de insertar, así reejecutar el
+   sync no duplica jugadores.
+
+2. Trazabilidad de estrategias:
+   Cada PlayerQuote guarda strategyVersion, por lo que siempre se puede saber
+   con qué algoritmo se calculó cada cotización histórica.
+
+3. Tolerancia a fallos externos:
+   Si football-data.org y WhoScored fallan, el sistema sigue funcionando con
+   datos curados. La aplicación nunca queda sin datos.
+
+4. Consistencia transaccional:
+   Las operaciones de compra/venta son 100% atómicas y usan bloqueo pesimista,
+   lo que las hace seguras ante concurrencia.
+
+5. Separación de DTOs y entidades:
+   Los controllers nunca exponen entidades JPA directamente, lo que protege el
+   modelo de datos interno.
+
+================================================================================

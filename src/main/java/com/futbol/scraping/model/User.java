@@ -40,7 +40,9 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.isSuperuser = false;
+        if (this.isSuperuser == null) {
+            this.isSuperuser = false;
+        }
     }
 
     @PreUpdate
