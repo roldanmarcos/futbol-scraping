@@ -49,7 +49,6 @@ public class ScrapingService {
                         .positionText(dto.getPositionText())
                         .playedPositions(dto.getPlayedPositions())
                         .playedPositionsShort(dto.getPlayedPositionsShort())
-                        .nationality(dto.getNationality())
                         .teamRegionName(dto.getTeamRegionName())
                         .regionCode(dto.getRegionCode())
                         .age(dto.getAge())

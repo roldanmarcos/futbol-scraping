@@ -36,9 +36,6 @@ public class Player {
     @Column(name = "played_positions_short")
     private String playedPositionsShort;
 
-    @Column(name = "nationality")
-    private String nationality;
-
     @Column(name = "team_region_name")
     private String teamRegionName;
 

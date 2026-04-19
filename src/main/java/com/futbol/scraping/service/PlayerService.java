@@ -61,7 +61,6 @@ public class PlayerService {
                 .league(player.getLeague())
                 .team(player.getTeam())
                 .position(player.getPosition())
-                .nationality(player.getNationality())
                 .age(player.getAge())
                 .weight(player.getWeight())
                 .appearances(player.getAppearances())
@@ -92,7 +91,6 @@ public class PlayerService {
                 p.setLeague(player.getLeague());
                 p.setTeam(player.getTeam());
                 p.setPosition(player.getPosition());
-                p.setNationality(player.getNationality());
                 if (player.getAge() != null)
                     p.setAge(player.getAge());
                 if (player.getWeight() != null)
@@ -186,7 +184,6 @@ public class PlayerService {
                 .league(player.getLeague())
                 .team(player.getTeam())
                 .position(player.getPosition())
-                .nationality(player.getNationality())
                 .age(player.getAge())
                 .appearances(player.getAppearances())
                 .goals(player.getGoals())

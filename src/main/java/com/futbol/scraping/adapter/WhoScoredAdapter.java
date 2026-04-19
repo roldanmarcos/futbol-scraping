@@ -130,7 +130,7 @@ public class WhoScoredAdapter {
                         + "category:'summary', subcategory:'all', statsAccumulationType:'0', isCurrent:'true',"
                         + "playerId:'', teamIds:'', matchId:'', stageId:'', tournamentOptions:tournamentId,"
                         + "sortBy:'Rating', sortAscending:'', age:'', ageComparisonType:'',"
-                        + "appearances:'', appearancesComparisonType:'', field:'Overall', nationality:'',"
+                        + "appearances:'', appearancesComparisonType:'', field:'Overall',"
                         + "positionOptions:'', timeOfTheGameEnd:'', timeOfTheGameStart:'', isMinApp:'true',"
                         + "page:'', includeZeroValues:'', numberOfPlayersToPick:String(playersToPick), incPens:''"
                         + "});"
