@@ -9,7 +9,6 @@ import com.futbol.scraping.model.PlayerQuote;
 import com.futbol.scraping.repository.PlayerQuoteRepository;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.strategy.ValuationStrategy;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -49,7 +48,7 @@ public class QuoteService {
     }
 
     @Transactional
-    @CacheEvict(value = {"quotes", "ranking", "playerDetail"}, allEntries = true)
+    @CacheEvict(value = { "quotes", "ranking", "playerDetail" }, allEntries = true)
     public RecalculateResponse recalculate() {
         log.info("Starting quote recalculation with strategy: {}", activeStrategy);
         List<Player> players = playerRepository.findAll();
@@ -74,7 +73,8 @@ public class QuoteService {
             }
         }
 
-        log.info("Quote recalculation complete. {} quotes generated for {} players", quotesGenerated.get(), players.size());
+        log.info("Quote recalculation complete. {} quotes generated for {} players", quotesGenerated.get(),
+                players.size());
         return RecalculateResponse.builder()
                 .playersProcessed(players.size())
                 .quotesGenerated(quotesGenerated.get())
