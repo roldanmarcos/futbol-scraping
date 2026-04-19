@@ -15,7 +15,6 @@ public class PlayerDetailDTO {
     private String league;
     private String team;
     private String position;
-    private String nationality;
     private Integer age;
     private Integer weight;
     private Integer appearances;
