@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class DataInitializer implements ApplicationRunner {
     private final PlayerTokenRepository playerTokenRepository;
     private final ScrapingService scrapingService;
     private final QuoteService quoteService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.superuser.username:superuser}")
     private String superuserUsername;
@@ -38,6 +40,9 @@ public class DataInitializer implements ApplicationRunner {
 
     @Value("${app.superuser.initial-balance:1000000}")
     private BigDecimal superuserInitialBalance;
+
+    @Value("${app.superuser.password:superuser123}")
+    private String superuserPassword;
 
     @Value("${app.tokens-per-player:100}")
     private int tokensPerPlayer;
@@ -73,16 +78,26 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private User createSuperuserIfNeeded() {
-        return userRepository.findByUsername(superuserUsername).orElseGet(() -> {
-            log.info("Creating superuser: {}", superuserUsername);
-            User superuser = User.builder()
-                    .username(superuserUsername)
-                    .email(superuserEmail)
-                    .balance(superuserInitialBalance)
-                    .isSuperuser(true)
-                    .build();
-            return userRepository.save(superuser);
-        });
+        return userRepository.findByUsername(superuserUsername)
+                .map(existing -> {
+                    if (existing.getPasswordHash() == null || existing.getPasswordHash().isBlank()) {
+                        existing.setPasswordHash(passwordEncoder.encode(superuserPassword));
+                        log.info("Updating superuser password hash for existing user: {}", superuserUsername);
+                        return userRepository.save(existing);
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    log.info("Creating superuser: {}", superuserUsername);
+                    User superuser = User.builder()
+                            .username(superuserUsername)
+                            .email(superuserEmail)
+                            .passwordHash(passwordEncoder.encode(superuserPassword))
+                            .balance(superuserInitialBalance)
+                            .isSuperuser(true)
+                            .build();
+                    return userRepository.save(superuser);
+                });
     }
 
     private void allocateTokensToSuperuser(User superuser) {

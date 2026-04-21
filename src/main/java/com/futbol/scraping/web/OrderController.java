@@ -3,6 +3,7 @@ package com.futbol.scraping.web;
 import com.futbol.scraping.dto.BuyOrderRequest;
 import com.futbol.scraping.dto.OrderResponse;
 import com.futbol.scraping.dto.SellOrderRequest;
+import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,16 +17,19 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AuthorizationService authorizationService;
 
     @PostMapping("/buy")
     public ResponseEntity<OrderResponse> buy(@RequestBody BuyOrderRequest request) {
         log.info("POST /orders/buy");
+        authorizationService.assertUserMatchesOrSuperuser(request.getBuyerId());
         return ResponseEntity.ok(orderService.buy(request));
     }
 
     @PostMapping("/sell")
     public ResponseEntity<OrderResponse> sell(@RequestBody SellOrderRequest request) {
         log.info("POST /orders/sell");
+        authorizationService.assertUserMatchesOrSuperuser(request.getSellerId());
         return ResponseEntity.ok(orderService.sell(request));
     }
 }
