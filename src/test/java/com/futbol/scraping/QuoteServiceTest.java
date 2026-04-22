@@ -254,10 +254,7 @@ class QuoteServiceTest {
 
     @Test
     void testSetActiveStrategy_PerformanceBased() {
-        // Act
-        quoteService.setActiveStrategy("performanceBased");
-
-        // Assert - no exception thrown, just verify it doesn't throw
+        // Act & Assert
         assertThatCode(() -> quoteService.setActiveStrategy("performanceBased"))
                 .doesNotThrowAnyException();
     }
