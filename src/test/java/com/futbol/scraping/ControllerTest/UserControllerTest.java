@@ -1,4 +1,4 @@
-package com.futbol.scraping.ControllerTest;
+package com.futbol.scraping.controller;
 
 import com.futbol.scraping.dto.PortfolioDTO;
 import com.futbol.scraping.dto.TransactionDTO;
