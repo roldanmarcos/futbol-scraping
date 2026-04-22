@@ -3,6 +3,7 @@ package com.futbol.scraping.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -24,6 +25,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBusiness(BusinessException ex) {
         log.warn("Business error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", ex.getMessage(), "timestamp", LocalDateTime.now().toString()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", ex.getMessage(), "timestamp", LocalDateTime.now().toString()));
     }
 
