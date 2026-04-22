@@ -9,11 +9,11 @@ Se han creado **76 tests unitarios** con mocks completos para todos los servicio
 | Servicio | Tests | Métodos | Cobertura |
 |----------|-------|---------|-----------|
 | UserService | 9 | 3 | ✅ 100% |
-| PlayerService | 21 | 4 | ✅ 100%+ |
-| QuoteService | 27 | 7 | ✅ 100%+ |
+| PlayerService | 21 | 4 | ✅ 100% |
+| QuoteService | 27 | 7 | ✅ 100% |
 | ScrapingService | 7 | 2 | ✅ 100% |
 | OrderService | 12 | 2 | ✅ 100% |
-| **TOTAL** | **76** | **18** | **✅ 100%+** |
+| **TOTAL** | **76** | **18** | **✅ 100%** |
 
 **Nota**: PlayerService y QuoteService tienen cobertura expandida con múltiples tests por método para cubrir casos negativos, edge cases y validaciones adicionales.
 
