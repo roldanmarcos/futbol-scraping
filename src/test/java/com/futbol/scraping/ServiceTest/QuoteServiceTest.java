@@ -1,4 +1,4 @@
-package com.futbol.scraping;
+package com.futbol.scraping.ServiceTest;
 
 import com.futbol.scraping.dto.PlayerRankingDTO;
 import com.futbol.scraping.dto.QuoteDTO;
