@@ -5,11 +5,13 @@ import com.futbol.scraping.dto.PlayerDetailDTO;
 import com.futbol.scraping.dto.PlayerRankingDTO;
 import com.futbol.scraping.dto.QuoteDTO;
 import com.futbol.scraping.exception.ResourceNotFoundException;
+import com.futbol.scraping.config.JwtAuthenticationFilter;
 import com.futbol.scraping.service.PlayerService;
 import com.futbol.scraping.service.QuoteService;
 import com.futbol.scraping.web.PlayerController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PlayerController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class PlayerControllerTest {
 
     @Autowired
@@ -34,6 +37,9 @@ class PlayerControllerTest {
 
     @MockBean
     private QuoteService quoteService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // ==================== getPlayers Tests ====================
 

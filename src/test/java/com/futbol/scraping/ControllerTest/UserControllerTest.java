@@ -3,10 +3,13 @@ package com.futbol.scraping.ControllerTest;
 import com.futbol.scraping.dto.PortfolioDTO;
 import com.futbol.scraping.dto.TransactionDTO;
 import com.futbol.scraping.exception.ResourceNotFoundException;
+import com.futbol.scraping.config.JwtAuthenticationFilter;
+import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.UserService;
 import com.futbol.scraping.web.UserController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
@@ -28,6 +32,12 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private AuthorizationService authorizationService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // ==================== Portfolio Tests ====================
 

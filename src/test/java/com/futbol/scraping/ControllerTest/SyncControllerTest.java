@@ -1,12 +1,14 @@
 package com.futbol.scraping.ControllerTest;
 
 import com.futbol.scraping.exception.BusinessException;
+import com.futbol.scraping.config.JwtAuthenticationFilter;
 import com.futbol.scraping.service.ScrapingService;
 import com.futbol.scraping.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.futbol.scraping.web.SyncController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -21,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SyncController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class SyncControllerTest {
 
     @Autowired
@@ -31,6 +34,9 @@ class SyncControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;
