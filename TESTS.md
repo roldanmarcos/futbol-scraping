@@ -245,18 +245,6 @@ Para mejorar aún más la calidad de testing se pueden considerar:
 **Total Tests**: 76 (fue 54, +40% mejora)  
 **Última Actualización**: Fase 2 - Mejora de Cobertura
 
-
-## 🗂️ Archivos de Test
-
-```
-src/test/java/com/futbol/scraping/
-├── UserServiceTest.java         (9 tests)
-├── PlayerServiceTest.java       (12 tests)
-├── QuoteServiceTest.java        (14 tests)
-├── ScrapingServiceTest.java     (7 tests)
-└── OrderServiceTest.java        (12 tests)
-```
-
 ## 🧪 Ejecución de Tests
 
 ### Ejecutar todos los tests
