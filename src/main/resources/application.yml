@@ -36,9 +36,13 @@ whoscored:
     wait-seconds: 20
 
 app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-change-me-change-me-change-me-please}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   superuser:
     username: superuser
     email: superuser@futbol.com
+    password: ${SUPERUSER_PASSWORD:superuser123}
     initial-balance: 1000000
   tokens-per-player: 100
   initial-token-price: 1.00

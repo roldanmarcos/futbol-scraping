@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,6 +40,9 @@ class UserServiceTest {
 
     @Mock
     private QuoteService quoteService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -209,8 +213,8 @@ class UserServiceTest {
                 .build();
 
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        when(passwordEncoder.encode(any(String.class))).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenReturn(newUser);
-
         // Act
         User result = userService.createUser("newuser", "new@example.com", new BigDecimal("500.00"));
 
@@ -220,6 +224,7 @@ class UserServiceTest {
         assertThat(result.getUsername()).isEqualTo("newuser");
         assertThat(result.getEmail()).isEqualTo("new@example.com");
         verify(userRepository).existsByUsername("newuser");
+        verify(passwordEncoder).encode(any(String.class));
         verify(userRepository).save(any(User.class));
     }
 

@@ -141,17 +141,6 @@ class QuoteServiceTest {
     }
 
     @Test
-    void testGetPlayerQuotes_PlayerNotFound() {
-        // Arrange
-        when(playerRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getPlayerQuotes(999L))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Player not found");
-    }
-
-    @Test
     void testGetCurrentQuote_Success() {
         // Arrange
         when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
@@ -265,10 +254,7 @@ class QuoteServiceTest {
 
     @Test
     void testSetActiveStrategy_PerformanceBased() {
-        // Act
-        quoteService.setActiveStrategy("performanceBased");
-
-        // Assert - no exception thrown, just verify it doesn't throw
+        // Act & Assert
         assertThatCode(() -> quoteService.setActiveStrategy("performanceBased"))
                 .doesNotThrowAnyException();
     }

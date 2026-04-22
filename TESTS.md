@@ -9,11 +9,11 @@ Se han creado **76 tests unitarios** con mocks completos para todos los servicio
 | Servicio | Tests | Métodos | Cobertura |
 |----------|-------|---------|-----------|
 | UserService | 9 | 3 | ✅ 100% |
-| PlayerService | 21 | 4 | ✅ 100%+ |
-| QuoteService | 27 | 7 | ✅ 100%+ |
+| PlayerService | 21 | 4 | ✅ 100% |
+| QuoteService | 27 | 7 | ✅ 100% |
 | ScrapingService | 7 | 2 | ✅ 100% |
 | OrderService | 12 | 2 | ✅ 100% |
-| **TOTAL** | **76** | **18** | **✅ 100%+** |
+| **TOTAL** | **76** | **18** | **✅ 100%** |
 
 **Nota**: PlayerService y QuoteService tienen cobertura expandida con múltiples tests por método para cubrir casos negativos, edge cases y validaciones adicionales.
 
@@ -244,18 +244,6 @@ Para mejorar aún más la calidad de testing se pueden considerar:
 **⭐ Nueva en Fase 2**: Casos negativos y edge cases mejorados  
 **Total Tests**: 76 (fue 54, +40% mejora)  
 **Última Actualización**: Fase 2 - Mejora de Cobertura
-
-
-## 🗂️ Archivos de Test
-
-```
-src/test/java/com/futbol/scraping/
-├── UserServiceTest.java         (9 tests)
-├── PlayerServiceTest.java       (12 tests)
-├── QuoteServiceTest.java        (14 tests)
-├── ScrapingServiceTest.java     (7 tests)
-└── OrderServiceTest.java        (12 tests)
-```
 
 ## 🧪 Ejecución de Tests
 
