@@ -1,4 +1,4 @@
-package com.futbol.scraping;
+package com.futbol.scraping.ServiceTest;
 
 import com.futbol.scraping.adapter.WhoScoredAdapter;
 import com.futbol.scraping.dto.PlayerStatsDTO;

@@ -3,6 +3,7 @@ package com.futbol.scraping.web;
 import com.futbol.scraping.dto.BuyOrderRequest;
 import com.futbol.scraping.dto.OrderResponse;
 import com.futbol.scraping.dto.SellOrderRequest;
+import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,17 @@ public class OrderController {
     @PostMapping("/buy")
     public ResponseEntity<OrderResponse> buy(@RequestBody BuyOrderRequest request) {
         log.info("POST /orders/buy");
+
+        if (request.getBuyerId() == null) {
+            throw new BusinessException("buyerId is required");
+        }
+        if (request.getPlayerId() == null) {
+            throw new BusinessException("playerId is required");
+        }
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new BusinessException("Quantity must be positive");
+        }
+
         authorizationService.assertUserMatchesOrSuperuser(request.getBuyerId());
         return ResponseEntity.ok(orderService.buy(request));
     }
@@ -29,7 +41,19 @@ public class OrderController {
     @PostMapping("/sell")
     public ResponseEntity<OrderResponse> sell(@RequestBody SellOrderRequest request) {
         log.info("POST /orders/sell");
+
+        if (request.getSellerId() == null) {
+            throw new BusinessException("sellerId is required");
+        }
+        if (request.getPlayerId() == null) {
+            throw new BusinessException("playerId is required");
+        }
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new BusinessException("Quantity must be positive");
+        }
+
         authorizationService.assertUserMatchesOrSuperuser(request.getSellerId());
+
         return ResponseEntity.ok(orderService.sell(request));
     }
 }
