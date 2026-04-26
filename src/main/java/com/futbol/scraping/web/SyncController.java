@@ -35,23 +35,10 @@ public class SyncController {
     public ResponseEntity<Map<String, Object>> createUser(@RequestBody Map<String, Object> body) {
         String username = (String) body.get("username");
         String email = (String) body.get("email");
-        
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Username is required");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-        
         Object balanceObj = body.get("balance");
-        BigDecimal balance;
-        try {
-            balance = balanceObj != null
-                    ? new BigDecimal(balanceObj.toString())
-                    : BigDecimal.valueOf(10000);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid balance format: " + balanceObj);
-        }
+        BigDecimal balance = balanceObj != null
+                ? new BigDecimal(balanceObj.toString())
+                : BigDecimal.valueOf(10000);
 
         var user = userService.createUser(username, email, balance);
         return ResponseEntity.ok(Map.of(

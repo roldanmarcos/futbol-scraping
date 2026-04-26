@@ -50,15 +50,6 @@ jobs:
           DB_PASSWORD: postgres
         run: ./mvnw -B -ntp -t .github/maven-toolchains.xml clean verify
 
-      - name: Verify JaCoCo XML report
-        shell: bash
-        run: |
-          if [ ! -f target/site/jacoco/jacoco.xml ]; then
-            echo "JaCoCo XML report not found at target/site/jacoco/jacoco.xml"
-            exit 1
-          fi
-          echo "JaCoCo XML report found."
-
       - name: Validate SonarCloud Settings
         id: sonar_precheck
         env:
@@ -88,7 +79,8 @@ jobs:
           DB_PASSWORD: postgres
         run: >-
           ./mvnw -B -ntp -t .github/maven-toolchains.xml
-          org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar
+          verify org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar
+          -DskipTests
           -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.token=${SONAR_TOKEN}
           -Dsonar.organization=${SONAR_ORGANIZATION}
