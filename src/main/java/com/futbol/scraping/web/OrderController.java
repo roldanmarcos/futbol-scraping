@@ -3,6 +3,7 @@ package com.futbol.scraping.web;
 import com.futbol.scraping.dto.BuyOrderRequest;
 import com.futbol.scraping.dto.OrderResponse;
 import com.futbol.scraping.dto.SellOrderRequest;
+import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,13 @@ public class OrderController {
         log.info("POST /orders/buy");
 
         if (request.getBuyerId() == null) {
-            throw new IllegalArgumentException("buyerId is required");
+            throw new BusinessException("buyerId is required");
         }
         if (request.getPlayerId() == null) {
-            throw new IllegalArgumentException("playerId is required");
+            throw new BusinessException("playerId is required");
         }
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("quantity must be positive");
+            throw new BusinessException("Quantity must be positive");
         }
 
         authorizationService.assertUserMatchesOrSuperuser(request.getBuyerId());
@@ -40,17 +41,18 @@ public class OrderController {
     @PostMapping("/sell")
     public ResponseEntity<OrderResponse> sell(@RequestBody SellOrderRequest request) {
         log.info("POST /orders/sell");
-        authorizationService.assertUserMatchesOrSuperuser(request.getSellerId());
 
         if (request.getSellerId() == null) {
-            throw new IllegalArgumentException("sellerId is required");
+            throw new BusinessException("sellerId is required");
         }
         if (request.getPlayerId() == null) {
-            throw new IllegalArgumentException("playerId is required");
+            throw new BusinessException("playerId is required");
         }
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("quantity must be positive");
+            throw new BusinessException("Quantity must be positive");
         }
+
+        authorizationService.assertUserMatchesOrSuperuser(request.getSellerId());
 
         return ResponseEntity.ok(orderService.sell(request));
     }
