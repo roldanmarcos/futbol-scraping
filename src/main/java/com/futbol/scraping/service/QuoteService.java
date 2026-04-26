@@ -152,22 +152,15 @@ public class QuoteService {
     }
 
     public void setActiveStrategy(String strategyName) {
-        this.activeStrategy = normalizeStrategyName(strategyName);
-        log.info("Active strategy changed to: {}", this.activeStrategy);
+        if (!strategyName.equals("performanceBased") && !strategyName.equals("positionWeighted")) {
+            throw new IllegalArgumentException("Unknown strategy: " + strategyName);
+        }
+        this.activeStrategy = strategyName;
+        log.info("Active strategy changed to: {}", strategyName);
     }
 
     private ValuationStrategy getActiveStrategy() {
         return activeStrategy.equals("performanceBased") ? performanceStrategy : positionStrategy;
-    }
-
-    private String normalizeStrategyName(String strategyName) {
-        if ("performanceBased".equals(strategyName) || "PerformanceBasedStrategy".equals(strategyName)) {
-            return "performanceBased";
-        }
-        if ("positionWeighted".equals(strategyName) || "PositionWeightedStrategy".equals(strategyName)) {
-            return "positionWeighted";
-        }
-        throw new IllegalArgumentException("Unknown strategy: " + strategyName);
     }
 
     private QuoteDTO toDTO(PlayerQuote quote) {

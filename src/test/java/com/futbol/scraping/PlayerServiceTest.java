@@ -1,7 +1,8 @@
-package com.futbol.scraping.ServiceTest;
+package com.futbol.scraping;
 
 import com.futbol.scraping.dto.PlayerDTO;
 import com.futbol.scraping.dto.PlayerDetailDTO;
+import com.futbol.scraping.dto.QuoteDTO;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.model.Player;
 import com.futbol.scraping.model.PlayerQuote;

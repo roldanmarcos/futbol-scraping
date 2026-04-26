@@ -1,6 +1,7 @@
-package com.futbol.scraping.ServiceTest;
+package com.futbol.scraping;
 
 import com.futbol.scraping.dto.PortfolioDTO;
+import com.futbol.scraping.dto.PortfolioItemDTO;
 import com.futbol.scraping.dto.TransactionDTO;
 import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
@@ -24,6 +25,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
