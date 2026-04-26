@@ -84,4 +84,9 @@ jobs:
           -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.token=${SONAR_TOKEN}
           -Dsonar.organization=${SONAR_ORGANIZATION}
+<<<<<<< Updated upstream
           -Dsonar.projectKey=${SONAR_PROJECT_KEY}
+=======
+          -Dsonar.projectKey=${SONAR_PROJECT_KEY}
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+>>>>>>> Stashed changes
