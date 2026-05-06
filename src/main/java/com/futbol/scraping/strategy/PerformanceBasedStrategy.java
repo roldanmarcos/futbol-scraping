@@ -11,7 +11,7 @@ import java.math.RoundingMode;
 /**
  * Strategy 1: General performance-based valuation.
  * score = 0.25*goals + 0.15*assists + 0.10*shots + 0.10*keyPasses
- *       + 0.10*dribbles + 0.10*tackles + 0.20*rating
+ * + 0.10*dribbles + 0.10*tackles + 0.20*rating
  * value = baseValue + (score * scaleFactor)
  */
 @Component("performanceBased")
@@ -19,6 +19,9 @@ import java.math.RoundingMode;
 public class PerformanceBasedStrategy implements ValuationStrategy {
 
     private static final String VERSION = "performance-v1.0";
+
+    private static final String FORWARD = "FORWARD";
+    private static final String MIDFIELDER = "MIDFIELDER";
 
     @Value("${app.quote.base-value:100.0}")
     private double baseValue;
@@ -31,7 +34,8 @@ public class PerformanceBasedStrategy implements ValuationStrategy {
         double goals = player.getGoals() != null ? player.getGoals() : 0;
         double assists = player.getAssists() != null ? player.getAssists() : 0;
         double appearances = player.getAppearances() != null ? player.getAppearances() : 1;
-        if (appearances == 0) appearances = 1;
+        if (appearances == 0)
+            appearances = 1;
 
         double goalsPerGame = goals / appearances;
         double assistsPerGame = assists / appearances;
@@ -75,39 +79,43 @@ public class PerformanceBasedStrategy implements ValuationStrategy {
     }
 
     private double estimateShotsPerGame(String position, double goalsPerGame) {
-        if (position == null) return 1.5;
+        if (position == null)
+            return 1.5;
         return switch (position.toUpperCase()) {
-            case "FW", "FORWARD", "ST", "CF", "SS" -> goalsPerGame * 4.0 + 2.0;
-            case "MF", "MIDFIELDER", "AM", "CM", "DM" -> goalsPerGame * 3.0 + 1.0;
+            case "FW", FORWARD, "ST", "CF", "SS" -> goalsPerGame * 4.0 + 2.0;
+            case "MF", MIDFIELDER, "AM", "CM", "DM" -> goalsPerGame * 3.0 + 1.0;
             default -> goalsPerGame * 2.0 + 0.5;
         };
     }
 
     private double estimateKeyPassesPerGame(String position, double assistsPerGame) {
-        if (position == null) return 1.0;
+        if (position == null)
+            return 1.0;
         return switch (position.toUpperCase()) {
-            case "MF", "MIDFIELDER", "AM", "CM" -> assistsPerGame * 3.0 + 1.5;
-            case "FW", "FORWARD", "ST" -> assistsPerGame * 2.0 + 0.5;
+            case "MF", MIDFIELDER, "AM", "CM" -> assistsPerGame * 3.0 + 1.5;
+            case "FW", FORWARD, "ST" -> assistsPerGame * 2.0 + 0.5;
             default -> assistsPerGame * 1.5 + 0.5;
         };
     }
 
     private double estimateDribblesPerGame(String position) {
-        if (position == null) return 1.0;
+        if (position == null)
+            return 1.0;
         return switch (position.toUpperCase()) {
-            case "FW", "FORWARD", "ST", "CF" -> 2.0;
-            case "MF", "MIDFIELDER", "AM" -> 1.5;
+            case "FW", FORWARD, "ST", "CF" -> 2.0;
+            case "MF", MIDFIELDER, "AM" -> 1.5;
             case "DF", "DEFENDER", "CB", "LB", "RB" -> 0.8;
             default -> 1.0;
         };
     }
 
     private double estimateTacklesPerGame(String position) {
-        if (position == null) return 1.5;
+        if (position == null)
+            return 1.5;
         return switch (position.toUpperCase()) {
             case "DF", "DEFENDER", "CB", "LB", "RB" -> 3.5;
-            case "MF", "MIDFIELDER", "DM", "CM" -> 2.5;
-            case "FW", "FORWARD" -> 0.5;
+            case "MF", MIDFIELDER, "DM", "CM" -> 2.5;
+            case "FW", FORWARD -> 0.5;
             default -> 1.5;
         };
     }

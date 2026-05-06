@@ -54,7 +54,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleMalformedJson_Returns400() {
         ResponseEntity<Map<String, Object>> response = handler.handleMalformedJson(
-                new HttpMessageNotReadableException("malformed"));
+            new HttpMessageNotReadableException("malformed", null, null));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).containsEntry("error", "Malformed JSON request");

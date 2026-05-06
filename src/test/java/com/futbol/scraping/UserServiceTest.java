@@ -1,7 +1,6 @@
 package com.futbol.scraping;
 
 import com.futbol.scraping.dto.PortfolioDTO;
-import com.futbol.scraping.dto.PortfolioItemDTO;
 import com.futbol.scraping.dto.TransactionDTO;
 import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
@@ -25,7 +24,6 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -149,7 +147,7 @@ class UserServiceTest {
                 .quantity(0)
                 .avgBuyPrice(new BigDecimal("50.00"))
                 .build();
-        
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(playerTokenRepository.findByUser(testUser)).thenReturn(List.of(testToken, zeroToken));
         when(quoteService.getCurrentPrice(testPlayer)).thenReturn(new BigDecimal("60.00"));
