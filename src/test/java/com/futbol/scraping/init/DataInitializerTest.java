@@ -60,7 +60,7 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_CreatesSuperuserSyncsAndAllocatesTokens() throws Exception {
+    void run_CreatesSuperuserSyncsAndAllocatesTokens() {
         User superuser = User.builder()
                 .id(1L)
                 .username("superuser")
@@ -86,7 +86,7 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_UpdatesBlankPasswordHashForExistingSuperuserAndSkipsSync() throws Exception {
+    void run_UpdatesBlankPasswordHashForExistingSuperuserAndSkipsSync() {
         User existing = User.builder()
                 .id(10L)
                 .username("superuser")
@@ -110,7 +110,7 @@ class DataInitializerTest {
     }
 
     @Test
-    void run_DoesNotFail_WhenQuoteRecalculationThrows() throws Exception {
+    void run_DoesNotFail_WhenQuoteRecalculationThrows() {
         User existing = User.builder()
                 .id(11L)
                 .username("superuser")
