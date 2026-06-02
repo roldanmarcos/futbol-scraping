@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -92,7 +91,7 @@ public class QuoteService {
         return playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(player)
                 .stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public QuoteDTO getCurrentQuote(Long playerId) {

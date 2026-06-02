@@ -43,22 +43,27 @@ public class WhoScoredAdapter {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
+    private static final String PREMIER_LEAGUE = "Premier League";
+    private static final String BUNDESLIGA = "Bundesliga";
+    private static final String LA_LIGA = "La Liga";
+    private static final String SERIE_A = "Serie A";
+    private static final String LIGUE_1 = "Ligue 1";
     private static final Map<String, String> LEAGUE_PAGE_URLS = Map.of(
-            "Premier League",
+            PREMIER_LEAGUE,
             "https://es.whoscored.com/Regions/252/Tournaments/2/Seasons/10072/Stages/22706/PlayerStatistics",
-            "Bundesliga",
+            BUNDESLIGA,
             "https://es.whoscored.com/Regions/81/Tournaments/3/Seasons/10068/Stages/22702/PlayerStatistics",
-            "La Liga", "https://es.whoscored.com/Regions/206/Tournaments/4/Seasons/10069/Stages/22703/PlayerStatistics",
-            "Serie A", "https://es.whoscored.com/Regions/108/Tournaments/5/Seasons/10070/Stages/22704/PlayerStatistics",
-            "Ligue 1",
+            LA_LIGA, "https://es.whoscored.com/Regions/206/Tournaments/4/Seasons/10069/Stages/22703/PlayerStatistics",
+            SERIE_A, "https://es.whoscored.com/Regions/108/Tournaments/5/Seasons/10070/Stages/22704/PlayerStatistics",
+            LIGUE_1,
             "https://es.whoscored.com/Regions/74/Tournaments/22/Seasons/10071/Stages/22705/PlayerStatistics");
 
     private static final Map<String, String> LEAGUE_TOURNAMENT_IDS = Map.of(
-            "Premier League", "2",
-            "Bundesliga", "3",
-            "La Liga", "4",
-            "Serie A", "5",
-            "Ligue 1", "22");
+            PREMIER_LEAGUE, "2",
+            BUNDESLIGA, "3",
+            LA_LIGA, "4",
+            SERIE_A, "5",
+            LIGUE_1, "22");
 
     public List<PlayerStatsDTO> scrapePlayersByLeague(String league) {
         log.info("Fetching WhoScored statistics with Selenium for league: {}", league);
@@ -157,7 +162,7 @@ public class WhoScoredAdapter {
         }
     }
 
-    public PlayerStatsDTO scrapePlayerById(String whoscoredId, String playerSlug) {
+    public PlayerStatsDTO scrapePlayerById(String whoscoredId) {
         log.info("scrapePlayerById is not implemented for statistics feed mode: {}", whoscoredId);
         return null;
     }
@@ -262,11 +267,11 @@ public class WhoScoredAdapter {
             return tournamentName;
         }
         return switch (tournamentName.trim().toLowerCase()) {
-            case "laliga", "la liga" -> "La Liga";
-            case "premier league" -> "Premier League";
-            case "bundesliga" -> "Bundesliga";
-            case "serie a" -> "Serie A";
-            case "ligue 1" -> "Ligue 1";
+            case "laliga", "la liga" -> LA_LIGA;
+            case "premier league" -> PREMIER_LEAGUE;
+            case "bundesliga" -> BUNDESLIGA;
+            case "serie a" -> SERIE_A;
+            case "ligue 1" -> LIGUE_1;
             default -> tournamentName;
         };
     }

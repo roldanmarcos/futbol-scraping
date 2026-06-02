@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +42,7 @@ public class PlayerService {
 
         return playerRepository.findAll(spec).stream()
                 .map(this::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Cacheable(value = "playerDetail", key = "#id")
@@ -53,7 +52,7 @@ public class PlayerService {
 
         Optional<PlayerQuote> latestQuote = playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player);
         List<PlayerQuote> recentQuotes = playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(player)
-                .stream().limit(10).collect(Collectors.toList());
+                .stream().limit(10).toList();
 
         return PlayerDetailDTO.builder()
                 .id(player.getId())
@@ -70,7 +69,7 @@ public class PlayerService {
                 .url(player.getUrl())
                 .currentQuote(latestQuote.map(PlayerQuote::getValue).orElse(null))
                 .lastQuoteDate(latestQuote.map(PlayerQuote::getQuoteDate).orElse(null))
-                .recentQuotes(recentQuotes.stream().map(this::toQuoteDTO).collect(Collectors.toList()))
+                .recentQuotes(recentQuotes.stream().map(this::toQuoteDTO).toList())
                 .build();
     }
 

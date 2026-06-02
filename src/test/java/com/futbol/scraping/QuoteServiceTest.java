@@ -21,505 +21,510 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class QuoteServiceTest {
 
-    @Mock
-    private PlayerRepository playerRepository;
-
-    @Mock
-    private PlayerQuoteRepository playerQuoteRepository;
-
-    @Mock
-    private ValuationStrategy performanceStrategy;
-
-    @Mock
-    private ValuationStrategy positionStrategy;
-
-    private QuoteService quoteService;
-    private Player testPlayer;
-    private PlayerQuote testQuote;
-
-    @BeforeEach
-    void setUp() {
-        quoteService = new QuoteService(
-                playerRepository,
-                playerQuoteRepository,
-                performanceStrategy,
-                positionStrategy
-        );
-
-        testPlayer = Player.builder()
-                .id(1L)
-                .name("Cristiano Ronaldo")
-                .league("Serie A")
-                .team("Juventus")
-                .position("ST")
-                .build();
-
-        testQuote = PlayerQuote.builder()
-                .id(1L)
-                .player(testPlayer)
-                .value(new BigDecimal("100.00"))
-                .quoteDate(LocalDateTime.now())
-                .strategyVersion("v1.0")
-                .baseScore(new BigDecimal("100.00"))
-                .build();
-    }
-
-    @Test
-    void testRecalculate_Success() {
-        // Arrange
-        when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("110.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
-        when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
-
-        // Act
-        RecalculateResponse response = quoteService.recalculate();
-
-        // Assert
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo("SUCCESS");
-        assertThat(response.getPlayersProcessed()).isEqualTo(1);
-        assertThat(response.getQuotesGenerated()).isEqualTo(1);
-        assertThat(response.getStrategyUsed()).isEqualTo("v1.0");
-        verify(playerRepository).findAll();
-        verify(playerQuoteRepository).save(any(PlayerQuote.class));
-    }
-
-    @Test
-    void testRecalculate_WithMultiplePlayers() {
-        // Arrange
-        Player player2 = Player.builder()
-                .id(2L)
-                .name("Lionel Messi")
-                .league("Ligue 1")
-                .team("PSG")
-                .position("ST")
-                .build();
-
-        when(performanceStrategy.calculate(any())).thenReturn(new BigDecimal("120.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
-        when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
-
-        // Act
-        RecalculateResponse response = quoteService.recalculate();
-
-        // Assert
-        assertThat(response.getPlayersProcessed()).isEqualTo(2);
-        assertThat(response.getQuotesGenerated()).isEqualTo(2);
-        verify(playerQuoteRepository, times(2)).save(any(PlayerQuote.class));
-    }
-
-    @Test
-    void testGetPlayerQuotes_Success() {
-        // Arrange
-        PlayerQuote quote2 = PlayerQuote.builder()
-                .id(2L)
-                .player(testPlayer)
-                .value(new BigDecimal("105.00"))
-                .quoteDate(LocalDateTime.now().minusDays(1))
-                .strategyVersion("v1.0")
-                .baseScore(new BigDecimal("105.00"))
-                .build();
-
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(List.of(testQuote, quote2));
-
-        // Act
-        List<QuoteDTO> quotes = quoteService.getPlayerQuotes(1L);
-
-        // Assert
-        assertThat(quotes).hasSize(2);
-        assertThat(quotes.get(0).getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
-        verify(playerRepository).findById(1L);
-    }
-
-    @Test
-    void testGetCurrentQuote_Success() {
-        // Arrange
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.of(testQuote));
-
-        // Act
-        QuoteDTO quote = quoteService.getCurrentQuote(1L);
-
-        // Assert
-        assertThat(quote).isNotNull();
-        assertThat(quote.getId()).isEqualTo(1L);
-        assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
-    }
-
-    @Test
-    void testGetCurrentQuote_NoQuoteFound() {
-        // Arrange
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getCurrentQuote(1L))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("No quote found");
-    }
-
-    @Test
-    void testGetQuoteAtDate_Success() {
-        // Arrange
-        LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
-                .thenReturn(List.of(testQuote));
-
-        // Act
-        QuoteDTO quote = quoteService.getQuoteAtDate(1L, targetDate);
-
-        // Assert
-        assertThat(quote).isNotNull();
-        assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
-    }
-
-    @Test
-    void testGetQuoteAtDate_NotFound() {
-        // Arrange
-        LocalDateTime targetDate = LocalDateTime.now().minusDays(10);
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
-                .thenReturn(Collections.emptyList());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getQuoteAtDate(1L, targetDate))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    @Test
-    void testGetRanking_Success() {
-        // Arrange
-        Player player2 = Player.builder()
-                .id(2L)
-                .name("Lionel Messi")
-                .league("Ligue 1")
-                .team("PSG")
-                .position("ST")
-                .build();
-
-        when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("110.00"));
-        when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any()))
-                .thenReturn(Optional.of(testQuote));
-
-        // Act
-        List<PlayerRankingDTO> ranking = quoteService.getRanking();
-
-        // Assert
-        assertThat(ranking).hasSize(2);
-        assertThat(ranking.get(0).getPlayerName()).isEqualTo("Lionel Messi");
-        assertThat(ranking.get(0).getRank()).isEqualTo(1);
-        assertThat(ranking.get(1).getRank()).isEqualTo(2);
-    }
-
-    @Test
-    void testGetCurrentPrice_WithQuote() {
-        // Arrange
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.of(testQuote));
-
-        // Act
-        BigDecimal price = quoteService.getCurrentPrice(testPlayer);
-
-        // Assert
-        assertThat(price).isEqualByComparingTo(new BigDecimal("100.00"));
-    }
-
-    @Test
-    void testGetCurrentPrice_NoQuote() {
-        // Arrange
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.empty());
-
-        // Act
-        BigDecimal price = quoteService.getCurrentPrice(testPlayer);
-
-        // Assert
-        assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
-    }
-
-    @Test
-    void testSetActiveStrategy_PerformanceBased() {
-        // Act & Assert
-        assertThatCode(() -> quoteService.setActiveStrategy("performanceBased"))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void testSetActiveStrategy_PositionWeighted() {
-        // Act & Assert
-        assertThatCode(() -> quoteService.setActiveStrategy("positionWeighted"))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void testSetActiveStrategy_Invalid() {
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.setActiveStrategy("invalidStrategy"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Unknown strategy");
-    }
-
-    @Test
-    void testRecalculate_PlayerCalculationException() {
-        // Arrange - one player throws exception, other succeeds
-        Player player2 = Player.builder()
-                .id(2L)
-                .name("Player 2")
-                .league("La Liga")
-                .team("Barcelona")
-                .position("ST")
-                .build();
-
-        when(performanceStrategy.calculate(testPlayer)).thenThrow(new RuntimeException("Calculation failed"));
-        when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
-        when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
-
-        // Act
-        RecalculateResponse response = quoteService.recalculate();
-
-        // Assert - should continue with next player despite exception
-        assertThat(response.getStatus()).isEqualTo("SUCCESS");
-        assertThat(response.getPlayersProcessed()).isEqualTo(2);
-        assertThat(response.getQuotesGenerated()).isEqualTo(1); // Only one succeeded
-        verify(playerQuoteRepository, times(1)).save(any(PlayerQuote.class));
-    }
-
-    @Test
-    void testGetPlayerQuotes_PlayerNotFound_ThrowsException() {
-        // Arrange
-        when(playerRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getPlayerQuotes(999L))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Player not found with id: 999");
-    }
-
-    @Test
-    void testGetCurrentQuote_PlayerNotFound() {
-        // Arrange
-        when(playerRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getCurrentQuote(999L))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    @Test
-    void testGetQuoteAtDate_PlayerNotFound() {
-        // Arrange
-        LocalDateTime date = LocalDateTime.now();
-        when(playerRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> quoteService.getQuoteAtDate(999L, date))
-                .isInstanceOf(ResourceNotFoundException.class);
-    }
-
-    @Test
-    void testGetRanking_EmptyPlayerList() {
-        // Arrange
-        when(playerRepository.findAll()).thenReturn(Collections.emptyList());
-
-        // Act
-        List<PlayerRankingDTO> ranking = quoteService.getRanking();
-
-        // Assert
-        assertThat(ranking).isEmpty();
-    }
-
-    @Test
-    void testGetRanking_CorrectRankAssignment() {
-        // Arrange - verify ranking is assigned correctly
-        Player player1 = Player.builder().id(1L).name("Player 1").league("PL").team("T1").position("ST").build();
-        Player player2 = Player.builder().id(2L).name("Player 2").league("PL").team("T2").position("ST").build();
-        Player player3 = Player.builder().id(3L).name("Player 3").league("PL").team("T3").position("ST").build();
-
-        when(performanceStrategy.calculate(player1)).thenReturn(new BigDecimal("80.00"));
-        when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
-        when(performanceStrategy.calculate(player3)).thenReturn(new BigDecimal("100.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(player1, player2, player3));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
-
-        // Act
-        List<PlayerRankingDTO> ranking = quoteService.getRanking();
-
-        // Assert - should be sorted by score descending: 120, 100, 80
-        assertThat(ranking).hasSize(3);
-        assertThat(ranking.get(0).getPlayerName()).isEqualTo("Player 2");
-        assertThat(ranking.get(0).getRank()).isEqualTo(1);
-        assertThat(ranking.get(1).getPlayerName()).isEqualTo("Player 3");
-        assertThat(ranking.get(1).getRank()).isEqualTo(2);
-        assertThat(ranking.get(2).getPlayerName()).isEqualTo("Player 1");
-        assertThat(ranking.get(2).getRank()).isEqualTo(3);
-    }
-
-    @Test
-    void testGetCurrentPrice_NegativeValue() {
-        // Arrange - quote with negative value (edge case)
-        PlayerQuote negativeQuote = PlayerQuote.builder()
-                .id(1L)
-                .player(testPlayer)
-                .value(new BigDecimal("-50.00"))
-                .quoteDate(LocalDateTime.now())
-                .strategyVersion("v1.0")
-                .baseScore(new BigDecimal("-50.00"))
-                .build();
-
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.of(negativeQuote));
-
-        // Act
-        BigDecimal price = quoteService.getCurrentPrice(testPlayer);
-
-        // Assert
-        assertThat(price).isEqualByComparingTo(new BigDecimal("-50.00"));
-    }
-
-    @Test
-    void testGetCurrentPrice_ZeroValue() {
-        // Arrange - quote with zero value
-        PlayerQuote zeroQuote = PlayerQuote.builder()
-                .id(1L)
-                .player(testPlayer)
-                .value(BigDecimal.ZERO)
-                .quoteDate(LocalDateTime.now())
-                .strategyVersion("v1.0")
-                .baseScore(BigDecimal.ZERO)
-                .build();
-
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Optional.of(zeroQuote));
-
-        // Act
-        BigDecimal price = quoteService.getCurrentPrice(testPlayer);
-
-        // Assert
-        assertThat(price).isEqualByComparingTo(BigDecimal.ZERO);
-    }
-
-    @Test
-    void testGetRanking_SameScorePlayersSorted() {
-        // Arrange - players with same score
-        Player player1 = Player.builder().id(1L).name("Player A").league("PL").team("T1").position("ST").build();
-        Player player2 = Player.builder().id(2L).name("Player B").league("PL").team("T2").position("ST").build();
-
-        when(performanceStrategy.calculate(any())).thenReturn(new BigDecimal("100.00"));
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-        when(playerRepository.findAll()).thenReturn(List.of(player1, player2));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
-
-        // Act
-        List<PlayerRankingDTO> ranking = quoteService.getRanking();
-
-        // Assert - both should have rank 1 with same score
-        assertThat(ranking).hasSize(2);
-        assertThat(ranking.get(0).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
-        assertThat(ranking.get(1).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
-    }
-
-    @Test
-    void testSetActiveStrategy_SwitchBetweenStrategies() {
-        // Arrange
-        when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("100.00"));
-        when(positionStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("120.00"));
-        when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
-        when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
-        when(performanceStrategy.getVersion()).thenReturn("perf-v1");
-        when(positionStrategy.getVersion()).thenReturn("pos-v1");
-
-        // Act 1 - use default performance strategy
-        quoteService.setActiveStrategy("performanceBased");
-        List<PlayerRankingDTO> ranking1 = quoteService.getRanking();
-
-        // Act 2 - switch to position strategy
-        quoteService.setActiveStrategy("positionWeighted");
-        List<PlayerRankingDTO> ranking2 = quoteService.getRanking();
-
-        // Assert
-        assertThat(ranking1.get(0).getStrategyVersion()).isEqualTo("perf-v1");
-        assertThat(ranking2.get(0).getStrategyVersion()).isEqualTo("pos-v1");
-    }
-
-    @Test
-    void testGetQuoteAtDate_MultipleQuotesReturnsFirst() {
-        // Arrange - multiple quotes before date
-        LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
-        PlayerQuote quote1 = PlayerQuote.builder()
-                .id(1L)
-                .player(testPlayer)
-                .value(new BigDecimal("110.00"))
-                .quoteDate(LocalDateTime.now().minusDays(1))
-                .strategyVersion("v1.0")
-                .baseScore(new BigDecimal("110.00"))
-                .build();
-
-        PlayerQuote quote2 = PlayerQuote.builder()
-                .id(2L)
-                .player(testPlayer)
-                .value(new BigDecimal("100.00"))
-                .quoteDate(LocalDateTime.now().minusDays(2))
-                .strategyVersion("v1.0")
-                .baseScore(new BigDecimal("100.00"))
-                .build();
-
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
-                .thenReturn(List.of(quote1, quote2));
-
-        // Act
-        QuoteDTO quote = quoteService.getQuoteAtDate(1L, targetDate);
-
-        // Assert - should return first (most recent) quote
-        assertThat(quote.getId()).isEqualTo(1L);
-        assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("110.00"));
-    }
-
-    @Test
-    void testRecalculate_EmptyPlayerList() {
-        // Arrange
-        when(playerRepository.findAll()).thenReturn(Collections.emptyList());
-        when(performanceStrategy.getVersion()).thenReturn("v1.0");
-
-        // Act
-        RecalculateResponse response = quoteService.recalculate();
-
-        // Assert
-        assertThat(response.getPlayersProcessed()).isEqualTo(0);
-        assertThat(response.getQuotesGenerated()).isEqualTo(0);
-        assertThat(response.getStatus()).isEqualTo("SUCCESS");
-        verify(playerQuoteRepository, never()).save(any());
-    }
-
-    @Test
-    void testGetPlayerQuotes_EmptyQuoteList() {
-        // Arrange
-        when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
-        when(playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(testPlayer))
-                .thenReturn(Collections.emptyList());
-
-        // Act
-        List<QuoteDTO> quotes = quoteService.getPlayerQuotes(1L);
-
-        // Assert
-        assertThat(quotes).isEmpty();
-    }
+        @Mock
+        private PlayerRepository playerRepository;
+
+        @Mock
+        private PlayerQuoteRepository playerQuoteRepository;
+
+        @Mock
+        private ValuationStrategy performanceStrategy;
+
+        @Mock
+        private ValuationStrategy positionStrategy;
+
+        private QuoteService quoteService;
+        private Player testPlayer;
+        private PlayerQuote testQuote;
+
+        @BeforeEach
+        void setUp() {
+                quoteService = new QuoteService(
+                                playerRepository,
+                                playerQuoteRepository,
+                                performanceStrategy,
+                                positionStrategy);
+
+                testPlayer = Player.builder()
+                                .id(1L)
+                                .name("Cristiano Ronaldo")
+                                .league("Serie A")
+                                .team("Juventus")
+                                .position("ST")
+                                .build();
+
+                testQuote = PlayerQuote.builder()
+                                .id(1L)
+                                .player(testPlayer)
+                                .value(new BigDecimal("100.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("100.00"))
+                                .build();
+        }
+
+        @Test
+        void testRecalculate_Success() {
+                // Arrange
+                when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("110.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
+                when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
+
+                // Act
+                RecalculateResponse response = quoteService.recalculate();
+
+                // Assert
+                assertThat(response).isNotNull();
+                assertThat(response.getStatus()).isEqualTo("SUCCESS");
+                assertThat(response.getPlayersProcessed()).isEqualTo(1);
+                assertThat(response.getQuotesGenerated()).isEqualTo(1);
+                assertThat(response.getStrategyUsed()).isEqualTo("v1.0");
+                verify(playerRepository).findAll();
+                verify(playerQuoteRepository).save(any(PlayerQuote.class));
+        }
+
+        @Test
+        void testRecalculate_WithMultiplePlayers() {
+                // Arrange
+                Player player2 = Player.builder()
+                                .id(2L)
+                                .name("Lionel Messi")
+                                .league("Ligue 1")
+                                .team("PSG")
+                                .position("ST")
+                                .build();
+
+                when(performanceStrategy.calculate(any())).thenReturn(new BigDecimal("120.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
+                when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
+
+                // Act
+                RecalculateResponse response = quoteService.recalculate();
+
+                // Assert
+                assertThat(response.getPlayersProcessed()).isEqualTo(2);
+                assertThat(response.getQuotesGenerated()).isEqualTo(2);
+                verify(playerQuoteRepository, times(2)).save(any(PlayerQuote.class));
+        }
+
+        @Test
+        void testGetPlayerQuotes_Success() {
+                // Arrange
+                PlayerQuote quote2 = PlayerQuote.builder()
+                                .id(2L)
+                                .player(testPlayer)
+                                .value(new BigDecimal("105.00"))
+                                .quoteDate(LocalDateTime.now().minusDays(1))
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("105.00"))
+                                .build();
+
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(List.of(testQuote, quote2));
+
+                // Act
+                List<QuoteDTO> quotes = quoteService.getPlayerQuotes(1L);
+
+                // Assert
+                assertThat(quotes).hasSize(2);
+                assertThat(quotes.get(0).getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
+                verify(playerRepository).findById(1L);
+        }
+
+        @Test
+        void testGetCurrentQuote_Success() {
+                // Arrange
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(testQuote));
+
+                // Act
+                QuoteDTO quote = quoteService.getCurrentQuote(1L);
+
+                // Assert
+                assertThat(quote).isNotNull();
+                assertThat(quote.getId()).isEqualTo(1L);
+                assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
+        }
+
+        @Test
+        void testGetCurrentQuote_NoQuoteFound() {
+                // Arrange
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.getCurrentQuote(1L))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessageContaining("No quote found");
+        }
+
+        @Test
+        void testGetQuoteAtDate_Success() {
+                // Arrange
+                LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
+                                .thenReturn(List.of(testQuote));
+
+                // Act
+                QuoteDTO quote = quoteService.getQuoteAtDate(1L, targetDate);
+
+                // Assert
+                assertThat(quote).isNotNull();
+                assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("100.00"));
+        }
+
+        @Test
+        void testGetQuoteAtDate_NotFound() {
+                // Arrange
+                LocalDateTime targetDate = LocalDateTime.now().minusDays(10);
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
+                                .thenReturn(Collections.emptyList());
+
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.getQuoteAtDate(1L, targetDate))
+                                .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        void testGetRanking_Success() {
+                // Arrange
+                Player player2 = Player.builder()
+                                .id(2L)
+                                .name("Lionel Messi")
+                                .league("Ligue 1")
+                                .team("PSG")
+                                .position("ST")
+                                .build();
+
+                when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("110.00"));
+                when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any()))
+                                .thenReturn(Optional.of(testQuote));
+
+                // Act
+                List<PlayerRankingDTO> ranking = quoteService.getRanking();
+
+                // Assert
+                assertThat(ranking).hasSize(2);
+                assertThat(ranking.get(0).getPlayerName()).isEqualTo("Lionel Messi");
+                assertThat(ranking.get(0).getRank()).isEqualTo(1);
+                assertThat(ranking.get(1).getRank()).isEqualTo(2);
+        }
+
+        @Test
+        void testGetCurrentPrice_WithQuote() {
+                // Arrange
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(testQuote));
+
+                // Act
+                BigDecimal price = quoteService.getCurrentPrice(testPlayer);
+
+                // Assert
+                assertThat(price).isEqualByComparingTo(new BigDecimal("100.00"));
+        }
+
+        @Test
+        void testGetCurrentPrice_NoQuote() {
+                // Arrange
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.empty());
+
+                // Act
+                BigDecimal price = quoteService.getCurrentPrice(testPlayer);
+
+                // Assert
+                assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
+        }
+
+        @Test
+        void testSetActiveStrategy_PerformanceBased() {
+                // Act & Assert
+                assertThatCode(() -> quoteService.setActiveStrategy("performanceBased"))
+                                .doesNotThrowAnyException();
+        }
+
+        @Test
+        void testSetActiveStrategy_PositionWeighted() {
+                // Act & Assert
+                assertThatCode(() -> quoteService.setActiveStrategy("positionWeighted"))
+                                .doesNotThrowAnyException();
+        }
+
+        @Test
+        void testSetActiveStrategy_Invalid() {
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.setActiveStrategy("invalidStrategy"))
+                                .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessageContaining("Unknown strategy");
+        }
+
+        @Test
+        void testRecalculate_PlayerCalculationException() {
+                // Arrange - one player throws exception, other succeeds
+                Player player2 = Player.builder()
+                                .id(2L)
+                                .name("Player 2")
+                                .league("La Liga")
+                                .team("Barcelona")
+                                .position("ST")
+                                .build();
+
+                when(performanceStrategy.calculate(testPlayer)).thenThrow(new RuntimeException("Calculation failed"));
+                when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
+                when(playerQuoteRepository.save(any(PlayerQuote.class))).thenReturn(testQuote);
+
+                // Act
+                RecalculateResponse response = quoteService.recalculate();
+
+                // Assert - should continue with next player despite exception
+                assertThat(response.getStatus()).isEqualTo("SUCCESS");
+                assertThat(response.getPlayersProcessed()).isEqualTo(2);
+                assertThat(response.getQuotesGenerated()).isEqualTo(1); // Only one succeeded
+                verify(playerQuoteRepository, times(1)).save(any(PlayerQuote.class));
+        }
+
+        @Test
+        void testGetPlayerQuotes_PlayerNotFound_ThrowsException() {
+                // Arrange
+                when(playerRepository.findById(999L)).thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.getPlayerQuotes(999L))
+                                .isInstanceOf(ResourceNotFoundException.class)
+                                .hasMessageContaining("Player not found with id: 999");
+        }
+
+        @Test
+        void testGetCurrentQuote_PlayerNotFound() {
+                // Arrange
+                when(playerRepository.findById(999L)).thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.getCurrentQuote(999L))
+                                .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        void testGetQuoteAtDate_PlayerNotFound() {
+                // Arrange
+                LocalDateTime date = LocalDateTime.now();
+                when(playerRepository.findById(999L)).thenReturn(Optional.empty());
+
+                // Act & Assert
+                assertThatThrownBy(() -> quoteService.getQuoteAtDate(999L, date))
+                                .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        void testGetRanking_EmptyPlayerList() {
+                // Arrange
+                when(playerRepository.findAll()).thenReturn(Collections.emptyList());
+
+                // Act
+                List<PlayerRankingDTO> ranking = quoteService.getRanking();
+
+                // Assert
+                assertThat(ranking).isEmpty();
+        }
+
+        @Test
+        void testGetRanking_CorrectRankAssignment() {
+                // Arrange - verify ranking is assigned correctly
+                Player player1 = Player.builder().id(1L).name("Player 1").league("PL").team("T1").position("ST")
+                                .build();
+                Player player2 = Player.builder().id(2L).name("Player 2").league("PL").team("T2").position("ST")
+                                .build();
+                Player player3 = Player.builder().id(3L).name("Player 3").league("PL").team("T3").position("ST")
+                                .build();
+
+                when(performanceStrategy.calculate(player1)).thenReturn(new BigDecimal("80.00"));
+                when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
+                when(performanceStrategy.calculate(player3)).thenReturn(new BigDecimal("100.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(player1, player2, player3));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
+
+                // Act
+                List<PlayerRankingDTO> ranking = quoteService.getRanking();
+
+                // Assert - should be sorted by score descending: 120, 100, 80
+                assertThat(ranking).hasSize(3);
+                assertThat(ranking.get(0).getPlayerName()).isEqualTo("Player 2");
+                assertThat(ranking.get(0).getRank()).isEqualTo(1);
+                assertThat(ranking.get(1).getPlayerName()).isEqualTo("Player 3");
+                assertThat(ranking.get(1).getRank()).isEqualTo(2);
+                assertThat(ranking.get(2).getPlayerName()).isEqualTo("Player 1");
+                assertThat(ranking.get(2).getRank()).isEqualTo(3);
+        }
+
+        @Test
+        void testGetCurrentPrice_NegativeValue() {
+                // Arrange - quote with negative value (edge case)
+                PlayerQuote negativeQuote = PlayerQuote.builder()
+                                .id(1L)
+                                .player(testPlayer)
+                                .value(new BigDecimal("-50.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("-50.00"))
+                                .build();
+
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(negativeQuote));
+
+                // Act
+                BigDecimal price = quoteService.getCurrentPrice(testPlayer);
+
+                // Assert
+                assertThat(price).isEqualByComparingTo(new BigDecimal("-50.00"));
+        }
+
+        @Test
+        void testGetCurrentPrice_ZeroValue() {
+                // Arrange - quote with zero value
+                PlayerQuote zeroQuote = PlayerQuote.builder()
+                                .id(1L)
+                                .player(testPlayer)
+                                .value(BigDecimal.ZERO)
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0")
+                                .baseScore(BigDecimal.ZERO)
+                                .build();
+
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(zeroQuote));
+
+                // Act
+                BigDecimal price = quoteService.getCurrentPrice(testPlayer);
+
+                // Assert
+                assertThat(price).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        void testGetRanking_SameScorePlayersSorted() {
+                // Arrange - players with same score
+                Player player1 = Player.builder().id(1L).name("Player A").league("PL").team("T1").position("ST")
+                                .build();
+                Player player2 = Player.builder().id(2L).name("Player B").league("PL").team("T2").position("ST")
+                                .build();
+
+                when(performanceStrategy.calculate(any())).thenReturn(new BigDecimal("100.00"));
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+                when(playerRepository.findAll()).thenReturn(List.of(player1, player2));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
+
+                // Act
+                List<PlayerRankingDTO> ranking = quoteService.getRanking();
+
+                // Assert - both should have rank 1 with same score
+                assertThat(ranking).hasSize(2);
+                assertThat(ranking.get(0).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
+                assertThat(ranking.get(1).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
+        }
+
+        @Test
+        void testSetActiveStrategy_SwitchBetweenStrategies() {
+                // Arrange
+                when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("100.00"));
+                when(positionStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("120.00"));
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
+                when(performanceStrategy.getVersion()).thenReturn("perf-v1");
+                when(positionStrategy.getVersion()).thenReturn("pos-v1");
+
+                // Act 1 - use default performance strategy
+                quoteService.setActiveStrategy("performanceBased");
+                List<PlayerRankingDTO> ranking1 = quoteService.getRanking();
+
+                // Act 2 - switch to position strategy
+                quoteService.setActiveStrategy("positionWeighted");
+                List<PlayerRankingDTO> ranking2 = quoteService.getRanking();
+
+                // Assert
+                assertThat(ranking1.get(0).getStrategyVersion()).isEqualTo("perf-v1");
+                assertThat(ranking2.get(0).getStrategyVersion()).isEqualTo("pos-v1");
+        }
+
+        @Test
+        void testGetQuoteAtDate_MultipleQuotesReturnsFirst() {
+                // Arrange - multiple quotes before date
+                LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
+                PlayerQuote quote1 = PlayerQuote.builder()
+                                .id(1L)
+                                .player(testPlayer)
+                                .value(new BigDecimal("110.00"))
+                                .quoteDate(LocalDateTime.now().minusDays(1))
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("110.00"))
+                                .build();
+
+                PlayerQuote quote2 = PlayerQuote.builder()
+                                .id(2L)
+                                .player(testPlayer)
+                                .value(new BigDecimal("100.00"))
+                                .quoteDate(LocalDateTime.now().minusDays(2))
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("100.00"))
+                                .build();
+
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
+                                .thenReturn(List.of(quote1, quote2));
+
+                // Act
+                QuoteDTO quote = quoteService.getQuoteAtDate(1L, targetDate);
+
+                // Assert - should return first (most recent) quote
+                assertThat(quote.getId()).isEqualTo(1L);
+                assertThat(quote.getValue()).isEqualByComparingTo(new BigDecimal("110.00"));
+        }
+
+        @Test
+        void testRecalculate_EmptyPlayerList() {
+                // Arrange
+                when(playerRepository.findAll()).thenReturn(Collections.emptyList());
+                when(performanceStrategy.getVersion()).thenReturn("v1.0");
+
+                // Act
+                RecalculateResponse response = quoteService.recalculate();
+
+                // Assert
+                assertThat(response.getPlayersProcessed()).isZero();
+                assertThat(response.getQuotesGenerated()).isZero();
+                assertThat(response.getStatus()).isEqualTo("SUCCESS");
+                verify(playerQuoteRepository, never()).save(any());
+        }
+
+        @Test
+        void testGetPlayerQuotes_EmptyQuoteList() {
+                // Arrange
+                when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
+                when(playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Collections.emptyList());
+
+                // Act
+                List<QuoteDTO> quotes = quoteService.getPlayerQuotes(1L);
+
+                // Assert
+                assertThat(quotes).isEmpty();
+        }
 }
