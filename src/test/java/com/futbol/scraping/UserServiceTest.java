@@ -234,9 +234,13 @@ class UserServiceTest {
         when(userRepository.existsByUsername("testuser")).thenReturn(true);
 
         // Act & Assert
-        assertThatThrownBy(() -> userService.createUser("testuser", "test@example.com", new BigDecimal("500.00")))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("Username already exists");
+        String username = "testuser";
+        String email = "test@example.com";
+        BigDecimal amount = new BigDecimal("500.00");
+
+        assertThatThrownBy(() -> userService.createUser(username, email, amount))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("Username already exists");
         verify(userRepository).existsByUsername("testuser");
         verify(userRepository, never()).save(any(User.class));
     }
