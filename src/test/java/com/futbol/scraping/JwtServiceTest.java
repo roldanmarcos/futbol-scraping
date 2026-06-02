@@ -64,16 +64,16 @@ class JwtServiceTest {
 
         assertThat(isValid).isFalse();
     }
-//
-//    @Test
-//    void testIsTokenValid_ExpiredToken() {
-//        JwtService expiredJwtService = new JwtService(SECRET, -1);
-//        String token = expiredJwtService.generateToken(testUser);
-//
-//        boolean isValid = expiredJwtService.isTokenValid(token, testUser);
-//
-//        assertThat(isValid).isFalse();
-//    }
+
+    @Test
+    void testIsTokenValid_ExpiredToken() {
+        JwtService expiredJwtService = new JwtService(SECRET, -1);
+        String token = expiredJwtService.generateToken(testUser);
+
+        boolean isValid = expiredJwtService.isTokenValid(token, testUser);
+
+        assertThat(isValid).isFalse();
+    }
 
     @Test
     void testExtractUsername_InvalidToken() {
@@ -81,4 +81,3 @@ class JwtServiceTest {
                 .isInstanceOf(JwtException.class);
     }
 }
-
