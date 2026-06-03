@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class QuoteService {
 
     private static final String PERFORMANCE_BASED_STRATEGY = "performanceBased";
+    private static final String PLAYER_NOT_FOUND_MESSAGE_PREFIX = "Player not found with id: ";
 
     private final PlayerRepository playerRepository;
     private final PlayerQuoteRepository playerQuoteRepository;
@@ -88,7 +89,7 @@ public class QuoteService {
     @Cacheable(value = "quotes", key = "#playerId")
     public List<QuoteDTO> getPlayerQuotes(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         return playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(player)
                 .stream()
@@ -98,7 +99,7 @@ public class QuoteService {
 
     public QuoteDTO getCurrentQuote(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         return playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player)
                 .map(this::toDTO)
@@ -107,7 +108,7 @@ public class QuoteService {
 
     public QuoteDTO getQuoteAtDate(Long playerId, LocalDateTime date) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         List<PlayerQuote> quotes = playerQuoteRepository.findByPlayerAndDateBefore(player, date);
         if (quotes.isEmpty()) {
