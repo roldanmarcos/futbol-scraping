@@ -90,80 +90,43 @@ public class PlayerService {
                 p.setLeague(player.getLeague());
                 p.setTeam(player.getTeam());
                 p.setPosition(player.getPosition());
-                if (player.getAge() != null)
-                    p.setAge(player.getAge());
-                if (player.getWeight() != null)
-                    p.setWeight(player.getWeight());
-                if (player.getAppearances() != null)
-                    p.setAppearances(player.getAppearances());
-                if (player.getGoals() != null)
-                    p.setGoals(player.getGoals());
-                if (player.getAssists() != null)
-                    p.setAssists(player.getAssists());
-                if (player.getPositionText() != null)
-                    p.setPositionText(player.getPositionText());
-                if (player.getPlayedPositions() != null)
-                    p.setPlayedPositions(player.getPlayedPositions());
-                if (player.getPlayedPositionsShort() != null)
-                    p.setPlayedPositionsShort(player.getPlayedPositionsShort());
-                if (player.getTeamRegionName() != null)
-                    p.setTeamRegionName(player.getTeamRegionName());
-                if (player.getRegionCode() != null)
-                    p.setRegionCode(player.getRegionCode());
-                if (player.getHeight() != null)
-                    p.setHeight(player.getHeight());
-                if (player.getSubOn() != null)
-                    p.setSubOn(player.getSubOn());
-                if (player.getManOfTheMatch() != null)
-                    p.setManOfTheMatch(player.getManOfTheMatch());
-                if (player.getMinutesPlayed() != null)
-                    p.setMinutesPlayed(player.getMinutesPlayed());
-                if (player.getIsManOfTheMatch() != null)
-                    p.setIsManOfTheMatch(player.getIsManOfTheMatch());
-                if (player.getIsActive() != null)
-                    p.setIsActive(player.getIsActive());
-                if (player.getIsOpta() != null)
-                    p.setIsOpta(player.getIsOpta());
-                if (player.getTournamentShortName() != null)
-                    p.setTournamentShortName(player.getTournamentShortName());
-                if (player.getTournamentId() != null)
-                    p.setTournamentId(player.getTournamentId());
-                if (player.getTournamentName() != null)
-                    p.setTournamentName(player.getTournamentName());
-                if (player.getTournamentRegionId() != null)
-                    p.setTournamentRegionId(player.getTournamentRegionId());
-                if (player.getTournamentRegionCode() != null)
-                    p.setTournamentRegionCode(player.getTournamentRegionCode());
-                if (player.getTournamentRegionName() != null)
-                    p.setTournamentRegionName(player.getTournamentRegionName());
-                if (player.getSeasonId() != null)
-                    p.setSeasonId(player.getSeasonId());
-                if (player.getSeasonName() != null)
-                    p.setSeasonName(player.getSeasonName());
-                if (player.getRating() != null)
-                    p.setRating(player.getRating());
-                if (player.getShotsPerGame() != null)
-                    p.setShotsPerGame(player.getShotsPerGame());
-                if (player.getAerialWonPerGame() != null)
-                    p.setAerialWonPerGame(player.getAerialWonPerGame());
-                if (player.getYellowCard() != null)
-                    p.setYellowCard(player.getYellowCard());
-                if (player.getRedCard() != null)
-                    p.setRedCard(player.getRedCard());
-                if (player.getPassSuccess() != null)
-                    p.setPassSuccess(player.getPassSuccess());
-                if (player.getRanking() != null)
-                    p.setRanking(player.getRanking());
-                if (player.getPlayerId() != null)
-                    p.setPlayerId(player.getPlayerId());
-                if (player.getFirstName() != null)
-                    p.setFirstName(player.getFirstName());
-                if (player.getLastName() != null)
-                    p.setLastName(player.getLastName());
-                if (player.getTeamId() != null)
-                    p.setTeamId(player.getTeamId());
-                if (player.getUrl() != null)
-                    p.setUrl(player.getUrl());
+                p.setAge(player.getAge());
+                p.setWeight(player.getWeight());
+                p.setAppearances(player.getAppearances());
+                p.setGoals(player.getGoals());
+                p.setAssists(player.getAssists());
+                p.setPositionText(player.getPositionText());
+                p.setPlayedPositions(player.getPlayedPositions());
+                p.setPlayedPositionsShort(player.getPlayedPositionsShort());
+                p.setTeamRegionName(player.getTeamRegionName());
+                p.setRegionCode(player.getRegionCode());
+                p.setHeight(player.getHeight());
+                p.setSubOn(player.getSubOn());
+                p.setManOfTheMatch(player.getManOfTheMatch());
+                p.setMinutesPlayed(player.getMinutesPlayed());
+                p.setIsManOfTheMatch(player.getIsManOfTheMatch());
+                p.setIsActive(player.getIsActive());
+                p.setIsOpta(player.getIsOpta());
+                p.setTournamentShortName(player.getTournamentShortName());
+                p.setTournamentId(player.getTournamentId());
+                p.setTournamentName(player.getTournamentName());
+                p.setTournamentRegionId(player.getTournamentRegionId());
+                p.setTournamentRegionCode(player.getTournamentRegionCode());
+                p.setTournamentRegionName(player.getTournamentRegionName());
+                p.setSeasonId(player.getSeasonId());
+                p.setSeasonName(player.getSeasonName());
+                p.setRating(player.getRating());
+                p.setShotsPerGame(player.getShotsPerGame());
+                p.setAerialWonPerGame(player.getAerialWonPerGame());
+                p.setYellowCard(player.getYellowCard());
+                p.setRedCard(player.getRedCard());
+                p.setPassSuccess(player.getPassSuccess());
+                p.setRanking(player.getRanking());
+                p.setPlayerId(player.getPlayerId());
+                p.setFirstName(player.getFirstName());
+                p.setLastName(player.getLastName());
+                p.setTeamId(player.getTeamId());
+                p.setUrl(player.getUrl());
                 p.setLastScrapedAt(System.currentTimeMillis());
                 return playerRepository.save(p);
             }
