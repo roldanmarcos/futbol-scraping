@@ -26,6 +26,7 @@ public class GlobalExceptionHandler {
 
     private static final String ERROR_KEY = "error";
     private static final String TIMESTAMP_KEY = "timestamp";
+    private static final String INVALID_REQUEST_PARAMETER_MESSAGE = "Invalid request parameter or format";
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
@@ -60,7 +61,7 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex) {
         log.warn("Invalid request parameter or format: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(ERROR_KEY, "Invalid request parameter or format", TIMESTAMP_KEY,
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
                         LocalDateTime.now().toString()));
     }
 
@@ -68,7 +69,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleDateTimeParseException(DateTimeParseException ex) {
         log.warn("Invalid date time format: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(ERROR_KEY, "Invalid request parameter or format", TIMESTAMP_KEY,
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
                         LocalDateTime.now().toString()));
     }
 
@@ -83,7 +84,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBindingAndConversionErrors(Exception ex) {
         log.warn("Invalid request parameter or payload: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(ERROR_KEY, "Invalid request parameter or format", TIMESTAMP_KEY,
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
                         LocalDateTime.now().toString()));
     }
 
@@ -92,7 +93,7 @@ public class GlobalExceptionHandler {
         if (isBindingOrConversionError(ex)) {
             log.warn("Invalid request parameter or payload (wrapped): {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(ERROR_KEY, "Invalid request parameter or format", TIMESTAMP_KEY,
+                    .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
                             LocalDateTime.now().toString()));
         }
 
@@ -106,7 +107,7 @@ public class GlobalExceptionHandler {
         if (isBindingOrConversionError(ex)) {
             log.warn("Invalid request parameter or payload: {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(ERROR_KEY, "Invalid request parameter or format", TIMESTAMP_KEY,
+                    .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
                             LocalDateTime.now().toString()));
         }
 
