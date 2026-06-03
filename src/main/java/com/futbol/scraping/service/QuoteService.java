@@ -28,17 +28,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class QuoteService {
 
+    private static final String PERFORMANCE_BASED_STRATEGY = "performanceBased";
+    private static final String PLAYER_NOT_FOUND_MESSAGE_PREFIX = "Player not found with id: ";
+
     private final PlayerRepository playerRepository;
     private final PlayerQuoteRepository playerQuoteRepository;
     private final ValuationStrategy performanceStrategy;
     private final ValuationStrategy positionStrategy;
 
-    private String activeStrategy = "performanceBased";
+    private String activeStrategy = PERFORMANCE_BASED_STRATEGY;
 
     public QuoteService(
             PlayerRepository playerRepository,
             PlayerQuoteRepository playerQuoteRepository,
-            @Qualifier("performanceBased") ValuationStrategy performanceStrategy,
+            @Qualifier(PERFORMANCE_BASED_STRATEGY) ValuationStrategy performanceStrategy,
             @Qualifier("positionWeighted") ValuationStrategy positionStrategy) {
         this.playerRepository = playerRepository;
         this.playerQuoteRepository = playerQuoteRepository;
@@ -86,7 +89,7 @@ public class QuoteService {
     @Cacheable(value = "quotes", key = "#playerId")
     public List<QuoteDTO> getPlayerQuotes(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         return playerQuoteRepository.findByPlayerOrderByQuoteDateDesc(player)
                 .stream()
@@ -96,7 +99,7 @@ public class QuoteService {
 
     public QuoteDTO getCurrentQuote(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         return playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player)
                 .map(this::toDTO)
@@ -105,7 +108,7 @@ public class QuoteService {
 
     public QuoteDTO getQuoteAtDate(Long playerId, LocalDateTime date) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found with id: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
 
         List<PlayerQuote> quotes = playerQuoteRepository.findByPlayerAndDateBefore(player, date);
         if (quotes.isEmpty()) {
@@ -151,7 +154,7 @@ public class QuoteService {
     }
 
     public void setActiveStrategy(String strategyName) {
-        if (!strategyName.equals("performanceBased") && !strategyName.equals("positionWeighted")) {
+        if (!strategyName.equals(PERFORMANCE_BASED_STRATEGY) && !strategyName.equals("positionWeighted")) {
             throw new IllegalArgumentException("Unknown strategy: " + strategyName);
         }
         this.activeStrategy = strategyName;
@@ -159,7 +162,7 @@ public class QuoteService {
     }
 
     private ValuationStrategy getActiveStrategy() {
-        return activeStrategy.equals("performanceBased") ? performanceStrategy : positionStrategy;
+        return activeStrategy.equals(PERFORMANCE_BASED_STRATEGY) ? performanceStrategy : positionStrategy;
     }
 
     private QuoteDTO toDTO(PlayerQuote quote) {

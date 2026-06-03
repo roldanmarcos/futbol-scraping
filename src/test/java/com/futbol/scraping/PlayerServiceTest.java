@@ -349,7 +349,6 @@ class PlayerServiceTest {
                                 .position("CB")
                                 .age(28)
                                 .weight(85)
-                                .height(190)
                                 .appearances(250)
                                 .goals(5)
                                 .assists(3)
@@ -370,7 +369,6 @@ class PlayerServiceTest {
                 assertThat(detail).isNotNull();
                 assertThat(detail.getAge()).isEqualTo(28);
                 assertThat(detail.getWeight()).isEqualTo(85);
-                // assertThat(detail.getHeight()).isEqualTo(190);
                 assertThat(detail.getAppearances()).isEqualTo(250);
                 assertThat(detail.getGoals()).isEqualTo(5);
                 assertThat(detail.getAssists()).isEqualTo(3);

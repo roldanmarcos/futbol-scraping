@@ -24,46 +24,53 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    private static final String ERROR_KEY = "error";
+    private static final String TIMESTAMP_KEY = "timestamp";
+    private static final String INVALID_REQUEST_PARAMETER_MESSAGE = "Invalid request parameter or format";
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
         log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", ex.getMessage(), "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, ex.getMessage(), TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusiness(BusinessException ex) {
         log.warn("Business error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", ex.getMessage(), "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, ex.getMessage(), TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("error", ex.getMessage(), "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, ex.getMessage(), TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleMalformedJson(HttpMessageNotReadableException ex) {
         log.warn("Malformed JSON request: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Malformed JSON request", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, "Malformed JSON request", TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
         log.warn("Invalid request parameter or format: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Invalid request parameter or format", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
+                        LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<Map<String, Object>> handleDateTimeParseException(DateTimeParseException ex) {
         log.warn("Invalid date time format: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Invalid request parameter or format", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
+                        LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler({
@@ -77,7 +84,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBindingAndConversionErrors(Exception ex) {
         log.warn("Invalid request parameter or payload: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Invalid request parameter or format", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
+                        LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(ServletException.class)
@@ -85,12 +93,13 @@ public class GlobalExceptionHandler {
         if (isBindingOrConversionError(ex)) {
             log.warn("Invalid request parameter or payload (wrapped): {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid request parameter or format", "timestamp", LocalDateTime.now().toString()));
+                    .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
+                            LocalDateTime.now().toString()));
         }
 
         log.error("Unexpected servlet error: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Internal server error", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, "Internal server error", TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -98,12 +107,13 @@ public class GlobalExceptionHandler {
         if (isBindingOrConversionError(ex)) {
             log.warn("Invalid request parameter or payload: {}", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid request parameter or format", "timestamp", LocalDateTime.now().toString()));
+                    .body(Map.of(ERROR_KEY, INVALID_REQUEST_PARAMETER_MESSAGE, TIMESTAMP_KEY,
+                            LocalDateTime.now().toString()));
         }
 
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Internal server error", "timestamp", LocalDateTime.now().toString()));
+                .body(Map.of(ERROR_KEY, "Internal server error", TIMESTAMP_KEY, LocalDateTime.now().toString()));
     }
 
     private boolean isBindingOrConversionError(Throwable throwable) {

@@ -2,6 +2,7 @@ package com.futbol.scraping.service;
 
 import com.futbol.scraping.model.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,8 +44,12 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, User user) {
-        String username = extractUsername(token);
-        return username.equals(user.getUsername()) && !isTokenExpired(token);
+        try {
+            String username = extractUsername(token);
+            return username.equals(user.getUsername()) && !isTokenExpired(token);
+        } catch (JwtException ex) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {
