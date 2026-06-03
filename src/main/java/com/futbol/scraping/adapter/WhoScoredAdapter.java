@@ -281,6 +281,20 @@ public class WhoScoredAdapter {
     }
 
     private String mapPosition(String positionText, String playedPositionsShort) {
+        String mappedFromText = mapPositionFromText(positionText);
+        if (mappedFromText != null) {
+            return mappedFromText;
+        }
+
+        String mappedFromShortCode = mapPositionFromShortCode(playedPositionsShort);
+        if (mappedFromShortCode != null) {
+            return mappedFromShortCode;
+        }
+
+        return "MF";
+    }
+
+    private String mapPositionFromText(String positionText) {
         String normalized = positionText != null ? positionText.trim().toLowerCase() : "";
         if (normalized.contains("goalkeeper")) {
             return "GK";
@@ -294,21 +308,26 @@ public class WhoScoredAdapter {
         if (normalized.contains("forward") || normalized.contains("striker")) {
             return "FW";
         }
-        if (playedPositionsShort != null && !playedPositionsShort.isBlank()) {
-            if (playedPositionsShort.contains("GK")) {
-                return "GK";
-            }
-            if (playedPositionsShort.contains("D")) {
-                return "DF";
-            }
-            if (playedPositionsShort.contains("M")) {
-                return "MF";
-            }
-            if (playedPositionsShort.contains("F")) {
-                return "FW";
-            }
+        return null;
+    }
+
+    private String mapPositionFromShortCode(String playedPositionsShort) {
+        if (playedPositionsShort == null || playedPositionsShort.isBlank()) {
+            return null;
         }
-        return "MF";
+        if (playedPositionsShort.contains("GK")) {
+            return "GK";
+        }
+        if (playedPositionsShort.contains("D")) {
+            return "DF";
+        }
+        if (playedPositionsShort.contains("M")) {
+            return "MF";
+        }
+        if (playedPositionsShort.contains("F")) {
+            return "FW";
+        }
+        return null;
     }
 
     private String text(JsonNode node, String field) {
@@ -359,11 +378,11 @@ public class WhoScoredAdapter {
         try {
             JsonNode value = node.get(field);
             if (value == null || value.isNull()) {
-                return null;
+                return Boolean.FALSE;
             }
             return value.asBoolean();
         } catch (Exception e) {
-            return null;
+            return Boolean.FALSE;
         }
     }
 }
