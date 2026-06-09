@@ -1,5 +1,6 @@
 package com.futbol.scraping.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,17 +9,30 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+@Schema(description = "Resumen de jugador")
 public class PlayerDTO {
+    @Schema(example = "100")
     private Long id;
+    @Schema(example = "Lionel Messi")
     private String name;
+    @Schema(example = "La Liga")
     private String league;
+    @Schema(example = "Inter Miami")
     private String team;
+    @Schema(example = "Forward")
     private String position;
+    @Schema(example = "37")
     private Integer age;
+    @Schema(example = "28")
     private Integer appearances;
+    @Schema(example = "20")
     private Integer goals;
+    @Schema(example = "12")
     private Integer assists;
+    @Schema(example = "whoscored-100")
     private String whoscoredId;
+    @Schema(example = "12.75")
     private BigDecimal currentQuote;
+    @Schema(example = "2026-06-09T12:30:00")
     private LocalDateTime lastQuoteDate;
 }

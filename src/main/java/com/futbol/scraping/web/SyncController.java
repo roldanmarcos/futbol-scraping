@@ -1,26 +1,31 @@
 package com.futbol.scraping.web;
 
+import com.futbol.scraping.dto.CreateUserRequest;
+import com.futbol.scraping.dto.SyncPlayersResponse;
+import com.futbol.scraping.dto.UserCreationResponse;
 import com.futbol.scraping.service.ScrapingService;
 import com.futbol.scraping.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "Administration", description = "Sincronización de jugadores y creación administrativa de usuarios")
 public class SyncController {
 
     private final ScrapingService scrapingService;
     private final UserService userService;
 
     @PostMapping("/sync/players")
-    public ResponseEntity<Map<String, Object>> syncPlayers(
-            @RequestParam(required = false) String league) {
+    @Operation(summary = "Sincronizar jugadores", description = "Actualiza los jugadores de una liga concreta o de todas las ligas si no se indica ninguna.")
+    public ResponseEntity<SyncPlayersResponse> syncPlayers(
+            @Parameter(description = "Liga a sincronizar; si no se envía, se sincronizan todas") @RequestParam(required = false) String league) {
         log.info("POST /sync/players - league={}", league);
         int count;
         if (league != null && !league.isBlank()) {
@@ -28,24 +33,18 @@ public class SyncController {
         } else {
             count = scrapingService.syncAllLeagues();
         }
-        return ResponseEntity.ok(Map.of("playersSync", count, "status", "SUCCESS"));
+        return ResponseEntity.ok(new SyncPlayersResponse(count, "SUCCESS"));
     }
 
     @PostMapping("/users")
-    public ResponseEntity<Map<String, Object>> createUser(@RequestBody Map<String, Object> body) {
-        String username = (String) body.get("username");
-        String email = (String) body.get("email");
-        Object balanceObj = body.get("balance");
-        BigDecimal balance = balanceObj != null
-                ? new BigDecimal(balanceObj.toString())
-                : BigDecimal.valueOf(10000);
-
-        var user = userService.createUser(username, email, balance);
-        return ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "balance", user.getBalance()
-        ));
+    @Operation(summary = "Crear usuario", description = "Crea un usuario administrativo con balance inicial opcional.")
+    public ResponseEntity<UserCreationResponse> createUser(
+            @org.springframework.web.bind.annotation.RequestBody CreateUserRequest body) {
+        var user = userService.createUser(body.getUsername(), body.getEmail(), body.getBalanceOrDefault());
+        return ResponseEntity.ok(new UserCreationResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getBalance()));
     }
 }
