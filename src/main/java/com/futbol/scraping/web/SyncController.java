@@ -36,15 +36,4 @@ public class SyncController {
         return ResponseEntity.ok(new SyncPlayersResponse(count, "SUCCESS"));
     }
 
-    @PostMapping("/users")
-    @Operation(summary = "Crear usuario", description = "Crea un usuario administrativo con balance inicial opcional.")
-    public ResponseEntity<UserCreationResponse> createUser(
-            @org.springframework.web.bind.annotation.RequestBody CreateUserRequest body) {
-        var user = userService.createUser(body.getUsername(), body.getEmail(), body.getBalanceOrDefault());
-        return ResponseEntity.ok(new UserCreationResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getBalance()));
-    }
 }

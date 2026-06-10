@@ -85,7 +85,7 @@ public class QuoteService {
                 .status("SUCCESS")
                 .build();
     }
-
+    @Transactional
     @Cacheable(value = "quotes", key = "#playerId")
     public List<QuoteDTO> getPlayerQuotes(Long playerId) {
         Player player = playerRepository.findById(playerId)
@@ -105,7 +105,7 @@ public class QuoteService {
                 .map(this::toDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("No quote found for player: " + playerId));
     }
-
+    @Transactional
     public QuoteDTO getQuoteAtDate(Long playerId, LocalDateTime date) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND_MESSAGE_PREFIX + playerId));
@@ -114,7 +114,7 @@ public class QuoteService {
         if (quotes.isEmpty()) {
             throw new ResourceNotFoundException("No quote found for player " + playerId + " before " + date);
         }
-        return toDTO(quotes.get(0));
+        return toDTO(quotes.getFirst());
     }
 
     @Cacheable("ranking")

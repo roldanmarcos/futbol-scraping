@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -81,24 +82,30 @@ class PlayerControllerWebMvcTest {
 
     @Test
     void getPlayerQuotes_WithDate_ReturnsSingleQuote() throws Exception {
-        LocalDateTime date = LocalDateTime.of(2024, 10, 2, 12, 30, 0);
+        // Arrange - LocalDate que envía el cliente
+        LocalDate inputDate = LocalDate.of(2024, 10, 2);
+        // LocalDateTime convertido por el controlador: atTime(23, 59, 59)
+        LocalDateTime expectedDateTime = inputDate.atTime(23, 59, 59);
+
         QuoteDTO quote = QuoteDTO.builder()
                 .id(10L)
                 .playerId(1L)
                 .playerName("Lionel Messi")
                 .value(new BigDecimal("180.50"))
-                .quoteDate(date)
+                .quoteDate(expectedDateTime)
                 .build();
 
-        when(quoteService.getQuoteAtDate(1L, date)).thenReturn(quote);
+        when(quoteService.getQuoteAtDate(1L, expectedDateTime)).thenReturn(quote);
 
-        mockMvc.perform(get("/players/1/quotes").param("date", "2024-10-02T12:30:00"))
+        // Act
+        mockMvc.perform(get("/players/1/quotes").param("date", "2024-10-02"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(10))
                 .andExpect(jsonPath("$[0].playerId").value(1))
                 .andExpect(jsonPath("$[0].value").value(180.50));
 
-        verify(quoteService).getQuoteAtDate(1L, date);
+        // Assert - Verifica que se llamó con el DateTime convertido correcto
+        verify(quoteService).getQuoteAtDate(1L, expectedDateTime);
     }
 
     @Test

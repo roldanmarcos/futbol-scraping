@@ -45,6 +45,7 @@ public class PlayerService {
                 .toList();
     }
 
+    @Transactional
     @Cacheable(value = "playerDetail", key = "#id")
     public PlayerDetailDTO getPlayerById(Long id) {
         Player player = playerRepository.findById(id)

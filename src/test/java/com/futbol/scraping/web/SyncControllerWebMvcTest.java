@@ -54,47 +54,4 @@ class SyncControllerWebMvcTest {
         verify(scrapingService).syncLeague("Premier League");
     }
 
-    @Test
-    void createUser_WhenBusinessRuleFails_Returns400() throws Exception {
-        when(userService.createUser(eq("pepe"), eq("pepe@mail.com"), any(BigDecimal.class)))
-                .thenThrow(new BusinessException("Username already exists: pepe"));
-
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"pepe\",\"email\":\"pepe@mail.com\",\"balance\":1000}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Username already exists: pepe"))
-                .andExpect(jsonPath("$.timestamp").exists());
-    }
-
-    @Test
-    void createUser_WhenJsonIsMalformed_Returns400() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"pepe\",\"email\":\"pepe@mail.com\",\"balance\": }"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Malformed JSON request"))
-                .andExpect(jsonPath("$.timestamp").exists());
-    }
-
-    @Test
-    void createUser_ReturnsCreatedUserPayload() throws Exception {
-        User user = User.builder()
-                .id(5L)
-                .username("ana")
-                .email("ana@mail.com")
-                .balance(new BigDecimal("1500.00"))
-                .build();
-
-        when(userService.createUser("ana", "ana@mail.com", new BigDecimal("1500"))).thenReturn(user);
-
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"ana\",\"email\":\"ana@mail.com\",\"balance\":1500}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(5))
-                .andExpect(jsonPath("$.username").value("ana"))
-                .andExpect(jsonPath("$.email").value("ana@mail.com"))
-                .andExpect(jsonPath("$.balance").value(1500.00));
-    }
 }

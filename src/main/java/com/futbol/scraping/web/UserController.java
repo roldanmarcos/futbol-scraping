@@ -6,6 +6,7 @@ import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class UserController {
 
     @GetMapping("/{id}/portfolio")
     @Operation(summary = "Obtener portafolio", description = "Devuelve el resumen de posiciones, inversión y rendimiento del usuario.")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PortfolioDTO> getPortfolio(
             @Parameter(description = "Identificador del usuario") @PathVariable Long id) {
         log.debug("GET /users/{}/portfolio", id);
@@ -35,6 +37,7 @@ public class UserController {
 
     @GetMapping("/{id}/transactions")
     @Operation(summary = "Obtener transacciones", description = "Devuelve el historial de operaciones realizadas por el usuario.")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<TransactionDTO>> getTransactions(
             @Parameter(description = "Identificador del usuario") @PathVariable Long id) {
         log.debug("GET /users/{}/transactions", id);
@@ -42,3 +45,5 @@ public class UserController {
         return ResponseEntity.ok(userService.getTransactions(id));
     }
 }
+
+

@@ -6,7 +6,8 @@ import com.futbol.scraping.dto.SellOrderRequest;
 import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,8 @@ public class OrderController {
 
     @PostMapping("/buy")
     @Operation(summary = "Comprar tokens", description = "Registra una orden de compra de tokens para un jugador.")
-    public ResponseEntity<OrderResponse> buy(
-            @RequestBody(description = "Datos de la orden de compra") @org.springframework.web.bind.annotation.RequestBody BuyOrderRequest request) {
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<OrderResponse> buy(@RequestBody BuyOrderRequest request) {
         log.info("POST /orders/buy");
         authorizationService.assertUserMatchesOrSuperuser(request.getBuyerId());
         return ResponseEntity.ok(orderService.buy(request));
@@ -34,8 +35,9 @@ public class OrderController {
 
     @PostMapping("/sell")
     @Operation(summary = "Vender tokens", description = "Registra una orden de venta de tokens para un jugador.")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<OrderResponse> sell(
-            @RequestBody(description = "Datos de la orden de venta") @org.springframework.web.bind.annotation.RequestBody SellOrderRequest request) {
+            @RequestBody SellOrderRequest request) {
         log.info("POST /orders/sell");
         authorizationService.assertUserMatchesOrSuperuser(request.getSellerId());
         return ResponseEntity.ok(orderService.sell(request));

@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -57,10 +58,11 @@ public class PlayerController {
     @Operation(summary = "Historial de cotizaciones", description = "Devuelve el historial de cotizaciones o una cotización puntual si se envía fecha.")
     public ResponseEntity<List<QuoteDTO>> getPlayerQuotes(
             @Parameter(description = "Identificador del jugador") @PathVariable Long id,
-            @Parameter(description = "Fecha y hora ISO-8601 para consultar una cotización puntual") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+            @Parameter(description = "Fecha en formato (ej: YYYY-MM-DD) para consultar una cotización puntual") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         log.debug("GET /players/{}/quotes - date={}", id, date);
         if (date != null) {
-            return ResponseEntity.ok(List.of(quoteService.getQuoteAtDate(id, date)));
+            LocalDateTime dateTime = date.atTime(23, 59, 59);
+            return ResponseEntity.ok(List.of(quoteService.getQuoteAtDate(id, dateTime)));
         }
         return ResponseEntity.ok(quoteService.getPlayerQuotes(id));
     }
