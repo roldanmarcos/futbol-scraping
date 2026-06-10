@@ -116,7 +116,6 @@ public class UserService {
                 return createUser(username, email, UUID.randomUUID().toString(), initialBalance);
         }
 
-        @Transactional
         public User createUser(String username, String email, String rawPassword, BigDecimal initialBalance) {
                 if (rawPassword == null || rawPassword.isBlank()) {
                         throw new BusinessException("Password is required");

@@ -415,6 +415,9 @@ class PlayerServiceTest {
                                 .league("Bundesliga")
                                 .team("Bayern")
                                 .position("RW")
+                                .age(30)
+                                .goals(50)
+                                .assists(20)
                                 .whoscoredId("12345")
                                 // All other fields null - should not update them
                                 .build();

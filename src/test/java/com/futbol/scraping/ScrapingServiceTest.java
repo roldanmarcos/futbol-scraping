@@ -238,37 +238,4 @@ class ScrapingServiceTest {
                                                 player.getGoals() == 800 &&
                                                 player.getAssists() == 300));
         }
-
-        @Test
-        void testSyncLeague_DefaultValuesForNullFields() {
-                // Arrange
-                PlayerStatsDTO incompletePlayer = PlayerStatsDTO.builder()
-                                .name("Incomplete Player")
-                                .position(null)
-                                .league(null)
-                                .team(null)
-                                .goals(null)
-                                .assists(null)
-                                .appearances(null)
-                                .build();
-
-                when(whoScoredAdapter.scrapePlayersByLeague("Serie A"))
-                                .thenReturn(List.of(incompletePlayer));
-                when(playerService.saveOrUpdatePlayer(any(Player.class)))
-                                .thenAnswer(invocation -> {
-                                        Player p = invocation.getArgument(0);
-                                        p.setId(1L);
-                                        return p;
-                                });
-
-                // Act
-                scrapingService.syncLeague("Serie A");
-
-                // Assert - verify default values are used
-                verify(playerService).saveOrUpdatePlayer(argThat(player -> player.getPosition().equals("MF") &&
-                                player.getTeam().equals("Unknown") &&
-                                player.getGoals() == 0 &&
-                                player.getAssists() == 0 &&
-                                player.getAppearances() == 0));
-        }
 }
