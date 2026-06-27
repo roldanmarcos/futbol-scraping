@@ -7,6 +7,8 @@ import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.model.*;
 import com.futbol.scraping.repository.*;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,17 @@ public class OrderService {
         private final PlayerTokenRepository playerTokenRepository;
         private final TransactionRepository transactionRepository;
         private final QuoteService quoteService;
+        private final MeterRegistry meterRegistry;
+        private Counter buySuccessCounter;
+
+        private Counter buySuccessCounter() {
+                if (buySuccessCounter == null) {
+                        buySuccessCounter = Counter.builder("orders.buy.success")
+                                .description("Número de compras de tokens exitosas")
+                                .register(meterRegistry);
+                }
+                return buySuccessCounter;
+        }
 
         @Transactional
         public OrderResponse buy(BuyOrderRequest request) {
@@ -99,6 +112,8 @@ public class OrderService {
                                 .totalAmount(totalCost)
                                 .build();
                 Transaction saved = transactionRepository.save(transaction);
+
+                buySuccessCounter().increment();
 
                 log.info("BUY order completed: transactionId={}, player={}, qty={}, total={}",
                                 saved.getId(), player.getName(), request.getQuantity(), totalCost);
