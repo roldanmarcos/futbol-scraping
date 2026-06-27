@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.model.User;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class AuthorizationServiceTest {
 

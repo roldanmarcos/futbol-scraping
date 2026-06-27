@@ -1,11 +1,13 @@
 package com.futbol.scraping.model;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@FutbolUnit
 class PlayerTokenTest {
 
     @Test

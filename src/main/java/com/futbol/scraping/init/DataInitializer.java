@@ -47,9 +47,17 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${app.tokens-per-player:100}")
     private int tokensPerPlayer;
 
+    // Poner en false en application-test.yml para evitar que Selenium sea invocado en tests
+    @Value("${app.data-initializer.enabled:true}")
+    private boolean dataInitializerEnabled;
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        if (!dataInitializerEnabled) {
+            log.info("DataInitializer deshabilitado (app.data-initializer.enabled=false)");
+            return;
+        }
         log.info("DataInitializer starting...");
 
         User superuser = createSuperuserIfNeeded();

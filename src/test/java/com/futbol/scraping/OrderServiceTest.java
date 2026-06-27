@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.dto.BuyOrderRequest;
 import com.futbol.scraping.dto.OrderResponse;
 import com.futbol.scraping.dto.SellOrderRequest;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 

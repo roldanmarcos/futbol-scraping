@@ -1,18 +1,17 @@
 package com.futbol.scraping.web;
 
+import com.futbol.scraping.annotation.FutbolWebMvcIT;
 import com.futbol.scraping.config.JwtAuthenticationFilter;
 import com.futbol.scraping.dto.PlayerDTO;
+import com.futbol.scraping.dto.PlayerRankingDTO;
 import com.futbol.scraping.dto.QuoteDTO;
-import com.futbol.scraping.exception.GlobalExceptionHandler;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.service.PlayerService;
 import com.futbol.scraping.service.QuoteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,9 +26,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@FutbolWebMvcIT
 @WebMvcTest(PlayerController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@Import(GlobalExceptionHandler.class)
 class PlayerControllerWebMvcTest {
 
     @Autowired
@@ -106,6 +104,47 @@ class PlayerControllerWebMvcTest {
 
         // Assert - Verifica que se llamó con el DateTime convertido correcto
         verify(quoteService).getQuoteAtDate(1L, expectedDateTime);
+    }
+
+    @Test
+    void getRanking_ReturnsOk() throws Exception {
+        PlayerRankingDTO rankingEntry = PlayerRankingDTO.builder()
+                .rank(1)
+                .playerId(1L)
+                .playerName("Lionel Messi")
+                .league("MLS")
+                .team("Inter Miami")
+                .position("FW")
+                .currentQuote(new BigDecimal("150.00"))
+                .score(new BigDecimal("98.4"))
+                .strategyVersion("v1")
+                .build();
+
+        when(quoteService.getRanking()).thenReturn(List.of(rankingEntry));
+
+        mockMvc.perform(get("/players/ranking").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].rank").value(1))
+                .andExpect(jsonPath("$[0].playerName").value("Lionel Messi"))
+                .andExpect(jsonPath("$[0].score").value(98.4));
+
+        verify(quoteService).getRanking();
+    }
+
+    @Test
+    void getPlayerQuotes_WithoutDate_ReturnsFullHistory() throws Exception {
+        QuoteDTO q1 = QuoteDTO.builder().id(1L).playerId(1L).playerName("Lionel Messi").value(new BigDecimal("100.00")).build();
+        QuoteDTO q2 = QuoteDTO.builder().id(2L).playerId(1L).playerName("Lionel Messi").value(new BigDecimal("120.00")).build();
+
+        when(quoteService.getPlayerQuotes(1L)).thenReturn(List.of(q1, q2));
+
+        mockMvc.perform(get("/players/1/quotes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].value").value(100.00))
+                .andExpect(jsonPath("$[1].value").value(120.00));
+
+        verify(quoteService).getPlayerQuotes(1L);
     }
 
     @Test

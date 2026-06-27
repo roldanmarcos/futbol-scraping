@@ -1,21 +1,19 @@
 package com.futbol.scraping.web;
 
+import com.futbol.scraping.annotation.FutbolWebMvcIT;
 import com.futbol.scraping.config.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.futbol.scraping.dto.BuyOrderRequest;
 import com.futbol.scraping.dto.OrderResponse;
 import com.futbol.scraping.dto.SellOrderRequest;
 import com.futbol.scraping.exception.BusinessException;
-import com.futbol.scraping.exception.GlobalExceptionHandler;
 import com.futbol.scraping.service.AuthorizationService;
 import com.futbol.scraping.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,9 +31,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@FutbolWebMvcIT
 @WebMvcTest(OrderController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@Import(GlobalExceptionHandler.class)
 class OrderControllerWebMvcTest {
 
         @Autowired

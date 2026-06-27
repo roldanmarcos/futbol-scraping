@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.dto.PlayerDTO;
 import com.futbol.scraping.dto.PlayerDetailDTO;
 import com.futbol.scraping.exception.ResourceNotFoundException;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class PlayerServiceTest {
 

@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.dto.AuthResponse;
 import com.futbol.scraping.dto.RegisterRequest;
 import com.futbol.scraping.exception.BusinessException;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
