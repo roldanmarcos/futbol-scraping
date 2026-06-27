@@ -5,6 +5,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -22,7 +24,7 @@ public class AuditAspect {
     public Object audit(ProceedingJoinPoint joinPoint) throws Throwable {
         String method = joinPoint.getSignature().toShortString();
         String params = Arrays.toString(joinPoint.getArgs());
-        String user = "unknown";
+        String user = resolveCurrentUser();
         String timestamp = LocalDateTime.now().format(fmt);
 
         long start = System.currentTimeMillis();
@@ -33,5 +35,13 @@ public class AuditAspect {
                 timestamp, user, method, params, duration);
 
         return result;
+    }
+
+    private String resolveCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return "ANONYMOUS";
+        }
+        return auth.getName();
     }
 }
