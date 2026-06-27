@@ -1,5 +1,6 @@
 package com.futbol.scraping.config;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -11,6 +12,7 @@ import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@FutbolUnit
 class AppConfigTest {
 
     private final AppConfig appConfig = new AppConfig();

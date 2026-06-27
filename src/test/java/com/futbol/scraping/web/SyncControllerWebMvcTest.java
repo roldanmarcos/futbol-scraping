@@ -1,17 +1,15 @@
 package com.futbol.scraping.web;
 
+import com.futbol.scraping.annotation.FutbolWebMvcIT;
 import com.futbol.scraping.config.JwtAuthenticationFilter;
 import com.futbol.scraping.exception.BusinessException;
-import com.futbol.scraping.exception.GlobalExceptionHandler;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.service.ScrapingService;
 import com.futbol.scraping.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,9 +23,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@FutbolWebMvcIT
 @WebMvcTest(SyncController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@Import(GlobalExceptionHandler.class)
 class SyncControllerWebMvcTest {
 
     @Autowired
@@ -41,6 +38,18 @@ class SyncControllerWebMvcTest {
 
     @MockBean
     private UserService userService;
+
+    @Test
+    void syncPlayers_WithoutLeague_SyncsAllLeagues() throws Exception {
+        when(scrapingService.syncAllLeagues()).thenReturn(48);
+
+        mockMvc.perform(post("/sync/players"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.playersSync").value(48))
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+
+        verify(scrapingService).syncAllLeagues();
+    }
 
     @Test
     void syncPlayers_WithLeague_ReturnsOk() throws Exception {

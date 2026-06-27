@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.adapter.WhoScoredAdapter;
 import com.futbol.scraping.dto.PlayerStatsDTO;
 import com.futbol.scraping.model.Player;
@@ -18,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class ScrapingServiceTest {
 

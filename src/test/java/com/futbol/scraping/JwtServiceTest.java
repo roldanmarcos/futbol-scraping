@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.service.JwtService;
 import io.jsonwebtoken.JwtException;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@FutbolUnit
 class JwtServiceTest {
 
     private static final String SECRET = "12345678901234567890123456789012";

@@ -1,5 +1,6 @@
 package com.futbol.scraping;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.dto.PlayerRankingDTO;
 import com.futbol.scraping.dto.QuoteDTO;
 import com.futbol.scraping.dto.RecalculateResponse;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@FutbolUnit
 @ExtendWith(MockitoExtension.class)
 class QuoteServiceTest {
 

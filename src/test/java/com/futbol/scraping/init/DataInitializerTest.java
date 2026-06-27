@@ -1,5 +1,6 @@
 package com.futbol.scraping.init;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.model.Player;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.repository.PlayerRepository;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@FutbolUnit
 class DataInitializerTest {
 
     private UserRepository userRepository;
@@ -52,6 +54,7 @@ class DataInitializerTest {
                 quoteService,
                 passwordEncoder);
 
+        ReflectionTestUtils.setField(dataInitializer, "dataInitializerEnabled", true);
         ReflectionTestUtils.setField(dataInitializer, "superuserUsername", "superuser");
         ReflectionTestUtils.setField(dataInitializer, "superuserEmail", "superuser@futbol.com");
         ReflectionTestUtils.setField(dataInitializer, "superuserInitialBalance", new BigDecimal("1000000"));
