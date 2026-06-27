@@ -2,6 +2,7 @@ package com.futbol.scraping.init;
 
 import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.model.Player;
+import com.futbol.scraping.model.PlayerToken;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.repository.PlayerTokenRepository;
@@ -19,12 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @FutbolUnit
 class DataInitializerTest {
@@ -47,12 +43,8 @@ class DataInitializerTest {
         passwordEncoder = mock(PasswordEncoder.class);
 
         dataInitializer = new DataInitializer(
-                userRepository,
-                playerRepository,
-                playerTokenRepository,
-                scrapingService,
-                quoteService,
-                passwordEncoder);
+                userRepository, playerRepository, playerTokenRepository,
+                scrapingService, quoteService, passwordEncoder);
 
         ReflectionTestUtils.setField(dataInitializer, "dataInitializerEnabled", true);
         ReflectionTestUtils.setField(dataInitializer, "superuserUsername", "superuser");
@@ -65,12 +57,8 @@ class DataInitializerTest {
     @Test
     void run_CreatesSuperuserSyncsAndAllocatesTokens() {
         User superuser = User.builder()
-                .id(1L)
-                .username("superuser")
-                .email("superuser@futbol.com")
-                .balance(new BigDecimal("1000000"))
-                .isSuperuser(true)
-                .build();
+                .id(1L).username("superuser").email("superuser@futbol.com")
+                .balance(new BigDecimal("1000000")).isSuperuser(true).build();
         Player player = Player.builder().id(5L).name("Player A").build();
 
         when(userRepository.findByUsername("superuser")).thenReturn(Optional.empty());
@@ -91,13 +79,8 @@ class DataInitializerTest {
     @Test
     void run_UpdatesBlankPasswordHashForExistingSuperuserAndSkipsSync() {
         User existing = User.builder()
-                .id(10L)
-                .username("superuser")
-                .email("superuser@futbol.com")
-                .passwordHash("   ")
-                .balance(new BigDecimal("1000000"))
-                .isSuperuser(true)
-                .build();
+                .id(10L).username("superuser").email("superuser@futbol.com")
+                .passwordHash("   ").balance(new BigDecimal("1000000")).isSuperuser(true).build();
 
         when(userRepository.findByUsername("superuser")).thenReturn(Optional.of(existing));
         when(passwordEncoder.encode("superuser123")).thenReturn("updated-hash");
@@ -115,13 +98,8 @@ class DataInitializerTest {
     @Test
     void run_DoesNotFail_WhenQuoteRecalculationThrows() {
         User existing = User.builder()
-                .id(11L)
-                .username("superuser")
-                .email("superuser@futbol.com")
-                .passwordHash("hash")
-                .balance(new BigDecimal("1000000"))
-                .isSuperuser(true)
-                .build();
+                .id(11L).username("superuser").email("superuser@futbol.com")
+                .passwordHash("hash").balance(new BigDecimal("1000000")).isSuperuser(true).build();
 
         when(userRepository.findByUsername("superuser")).thenReturn(Optional.of(existing));
         when(playerRepository.count()).thenReturn(2L, 2L);
