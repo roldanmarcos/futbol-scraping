@@ -168,9 +168,6 @@ public class OrderService {
 
         buySuccessCounter().increment();
 
-        log.info("BUY order completed: transactionId={}, player={}, qty={}, total={}",
-                saved.getId(), player.getName(), request.getQuantity(), totalCost);
-
         return OrderResponse.builder()
                 .orderId(buyOrder.getId())
                 .playerId(player.getId())
