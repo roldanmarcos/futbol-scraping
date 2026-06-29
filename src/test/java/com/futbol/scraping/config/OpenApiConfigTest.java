@@ -1,11 +1,13 @@
 package com.futbol.scraping.config;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@FutbolUnit
 class OpenApiConfigTest {
 
     private final OpenApiConfig openApiConfig = new OpenApiConfig();

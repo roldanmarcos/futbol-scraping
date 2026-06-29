@@ -15,7 +15,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,9 +46,16 @@ public class DataInitializer implements ApplicationRunner {
     @Value("${app.tokens-per-player:100}")
     private int tokensPerPlayer;
 
+    // Poner en false en application-test.yml para evitar que Selenium sea invocado en tests
+    @Value("${app.data-initializer.enabled:true}")
+    private boolean dataInitializerEnabled;
+
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
+        if (!dataInitializerEnabled) {
+            log.info("DataInitializer deshabilitado (app.data-initializer.enabled=false)");
+            return;
+        }
         log.info("DataInitializer starting...");
 
         User superuser = createSuperuserIfNeeded();

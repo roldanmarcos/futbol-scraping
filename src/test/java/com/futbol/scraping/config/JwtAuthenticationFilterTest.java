@@ -1,5 +1,6 @@
 package com.futbol.scraping.config;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.repository.UserRepository;
 import com.futbol.scraping.service.JwtService;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@FutbolUnit
 class JwtAuthenticationFilterTest {
 
     private JwtService jwtService;

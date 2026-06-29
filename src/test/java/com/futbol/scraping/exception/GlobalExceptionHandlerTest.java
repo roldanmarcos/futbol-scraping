@@ -1,5 +1,6 @@
 package com.futbol.scraping.exception;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@FutbolUnit
 class GlobalExceptionHandlerTest {
 
     private GlobalExceptionHandler handler;

@@ -1,9 +1,11 @@
 package com.futbol.scraping.model;
 
+import com.futbol.scraping.annotation.FutbolUnit;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@FutbolUnit
 class PlayerTest {
 
     @Test
