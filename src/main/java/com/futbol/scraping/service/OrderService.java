@@ -32,6 +32,7 @@ public class OrderService {
     private final QuoteService quoteService;
     private final MeterRegistry meterRegistry;
     private Counter buySuccessCounter;
+    private Counter sellSuccessCounter;
 
     private Counter buySuccessCounter() {
         if (buySuccessCounter == null) {
@@ -40,6 +41,15 @@ public class OrderService {
                     .register(meterRegistry);
         }
         return buySuccessCounter;
+    }
+
+    private Counter sellSuccessCounter() {
+        if (sellSuccessCounter == null) {
+            sellSuccessCounter = Counter.builder("orders.sell.success")
+                    .description("Número de ventas de tokens exitosas")
+                    .register(meterRegistry);
+        }
+        return sellSuccessCounter;
     }
 
     @Transactional
@@ -277,6 +287,8 @@ public class OrderService {
 
         log.info("SELL order processed: orderId={}, filled={}, remaining={}",
                 sellOrder.getId(), filledQty, remainingQty);
+
+        sellSuccessCounter().increment();
 
         return OrderResponse.builder()
                 .orderId(sellOrder.getId())
