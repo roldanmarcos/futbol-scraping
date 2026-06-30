@@ -6,6 +6,7 @@ import com.futbol.scraping.dto.PlayerDetailDTO;
 import com.futbol.scraping.model.Player;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.repository.PlayerTokenRepository;
+import com.futbol.scraping.repository.TradeOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,14 @@ class PlayerControllerIT {
     @Autowired
     private PlayerTokenRepository playerTokenRepository;
 
+    @Autowired
+    private TradeOrderRepository tradeOrderRepository;
+
     private Player messi;
 
     @BeforeEach
     void setUp() {
+        tradeOrderRepository.deleteAll();
         playerTokenRepository.deleteAll();
         playerRepository.deleteAll();
         messi = playerRepository.save(Player.builder()

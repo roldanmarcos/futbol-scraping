@@ -29,7 +29,8 @@ public class SecurityConfig {
                                 .exceptionHandling(ex -> ex.authenticationEntryPoint(
                                                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(HttpMethod.POST, "/orders/buy", "/orders/sell")
+                                                .requestMatchers(HttpMethod.POST, "/orders/buy", "/orders/sell",
+                                                                "/orders/*/cancel")
                                                 .authenticated()
                                                 .requestMatchers(HttpMethod.GET, "/users/*/portfolio",
                                                                 "/users/*/transactions")

@@ -11,6 +11,7 @@ import com.futbol.scraping.model.PlayerToken;
 import com.futbol.scraping.model.User;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.repository.PlayerTokenRepository;
+import com.futbol.scraping.repository.TradeOrderRepository;
 import com.futbol.scraping.repository.TransactionRepository;
 import com.futbol.scraping.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +48,9 @@ class OrderFlowIT {
     private TransactionRepository transactionRepository;
 
     @Autowired
+    private TradeOrderRepository tradeOrderRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Player messi;
@@ -55,6 +59,7 @@ class OrderFlowIT {
 
     @BeforeEach
     void setUp() {
+        tradeOrderRepository.deleteAll();
         transactionRepository.deleteAll();
         playerTokenRepository.deleteAll();
         playerRepository.deleteAll();

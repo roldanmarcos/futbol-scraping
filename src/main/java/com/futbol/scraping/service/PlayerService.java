@@ -27,6 +27,16 @@ public class PlayerService {
     private final PlayerRepository playerRepository;
     private final PlayerQuoteRepository playerQuoteRepository;
 
+    @Transactional(readOnly = true)
+    public long countPlayers() {
+        return playerRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Player> findAllPlayers() {
+        return playerRepository.findAll();
+    }
+
     @Cacheable("players")
     public List<PlayerDTO> getPlayers(String league, String team, String position) {
         Specification<Player> spec = Specification.where(null);
