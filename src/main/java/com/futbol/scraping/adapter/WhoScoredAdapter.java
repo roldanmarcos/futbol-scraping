@@ -50,20 +50,28 @@ public class WhoScoredAdapter {
     private static final String LIGUE_1 = "Ligue 1";
     private static final Map<String, String> LEAGUE_PAGE_URLS = Map.of(
             PREMIER_LEAGUE,
-            "https://es.whoscored.com/Regions/252/Tournaments/2/Seasons/10072/Stages/22706/PlayerStatistics",
+            "https://es.whoscored.com/Regions/182/Tournaments/77/Seasons/10764/Stages/24555/PlayerStatistics",
             BUNDESLIGA,
-            "https://es.whoscored.com/Regions/81/Tournaments/3/Seasons/10068/Stages/22702/PlayerStatistics",
-            LA_LIGA, "https://es.whoscored.com/Regions/206/Tournaments/4/Seasons/10069/Stages/22703/PlayerStatistics",
-            SERIE_A, "https://es.whoscored.com/Regions/108/Tournaments/5/Seasons/10070/Stages/22704/PlayerStatistics",
+            "https://es.whoscored.com/Regions/81/Tournaments/3/Seasons/10720/Stages/24478/PlayerStatistics",
+            LA_LIGA, "https://es.whoscored.com/Regions/206/Tournaments/4/Seasons/10803/Stages/24622/PlayerStatistics",
+            SERIE_A, "https://es.whoscored.com/Regions/108/Tournaments/5/Seasons/10732/Stages/24500/PlayerStatistics",
             LIGUE_1,
-            "https://es.whoscored.com/Regions/74/Tournaments/22/Seasons/10071/Stages/22705/PlayerStatistics");
+            "https://es.whoscored.com/Regions/74/Tournaments/22/Seasons/10792/Stages/24609/PlayerStatistics");
 
     private static final Map<String, String> LEAGUE_TOURNAMENT_IDS = Map.of(
-            PREMIER_LEAGUE, "2",
+            PREMIER_LEAGUE, "77",
             BUNDESLIGA, "3",
             LA_LIGA, "4",
             SERIE_A, "5",
             LIGUE_1, "22");
+
+    private static final Map<String, String> LEAGUE_STAGE_IDS = Map.of(
+            PREMIER_LEAGUE, "24555",
+            BUNDESLIGA, "24478",
+            LA_LIGA, "24622",
+            SERIE_A, "24500",
+            LIGUE_1, "24609"
+    );
 
     public List<PlayerStatsDTO> scrapePlayersByLeague(String league) {
         log.info("Fetching WhoScored statistics with Selenium for league: {}", league);
@@ -80,6 +88,12 @@ public class WhoScoredAdapter {
                 return Collections.emptyList();
             }
 
+            String stageId = LEAGUE_STAGE_IDS.get(league);
+                if (stageId == null) {
+                    log.warn("No stage id configured for league: {}", league);
+                    return Collections.emptyList();
+                }
+
             WebDriver driver = null;
             try {
                 driver = createDriver();
@@ -91,7 +105,7 @@ public class WhoScoredAdapter {
                     return "complete".equals(state);
                 });
 
-                String feedBody = fetchFeedBodyInBrowser(driver, tournamentId, numberOfPlayers);
+                String feedBody = fetchFeedBodyInBrowser(driver, tournamentId, stageId, numberOfPlayers);
                 if (feedBody == null || feedBody.isBlank()) {
                     return Collections.emptyList();
                 }
@@ -126,14 +140,15 @@ public class WhoScoredAdapter {
         return driver;
     }
 
-    private String fetchFeedBodyInBrowser(WebDriver driver, String tournamentId, int playersToPick) {
+    private String fetchFeedBodyInBrowser(WebDriver driver, String tournamentId, String stageId, int playersToPick) {
         String result = (String) ((JavascriptExecutor) driver).executeAsyncScript(
                 "const tournamentId = arguments[0];"
-                        + "const playersToPick = arguments[1];"
+                        + "const stageId = arguments[1];"
+                        + "const playersToPick = arguments[2];"
                         + "const done = arguments[arguments.length - 1];"
                         + "const params = new URLSearchParams({"
                         + "category:'summary', subcategory:'all', statsAccumulationType:'0', isCurrent:'true',"
-                        + "playerId:'', teamIds:'', matchId:'', stageId:'', tournamentOptions:tournamentId,"
+                        + "playerId:'', teamIds:'', matchId:'', stageId:stageId, tournamentOptions:tournamentId,"
                         + "sortBy:'Rating', sortAscending:'', age:'', ageComparisonType:'',"
                         + "appearances:'', appearancesComparisonType:'', field:'Overall',"
                         + "positionOptions:'', timeOfTheGameEnd:'', timeOfTheGameStart:'', isMinApp:'true',"
@@ -146,6 +161,7 @@ public class WhoScoredAdapter {
                         + "})"
                         + ".catch((error) => done(JSON.stringify({status: 0, error: String(error)})));",
                 tournamentId,
+                stageId,
                 playersToPick);
 
         try {

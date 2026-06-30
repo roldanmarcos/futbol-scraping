@@ -117,6 +117,7 @@ class OrderServiceTest {
                 .build();
 
         ReflectionTestUtils.setField(orderService, "buySuccessCounter", counter);
+        ReflectionTestUtils.setField(orderService, "sellSuccessCounter", counter);
     }
 
     private void mockTradeOrderSave() {
