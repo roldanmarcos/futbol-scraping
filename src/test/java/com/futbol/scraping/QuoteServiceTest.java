@@ -206,7 +206,6 @@ class QuoteServiceTest {
 
         @Test
         void testGetRanking_Success() {
-                // Arrange
                 Player player2 = Player.builder()
                                 .id(2L)
                                 .name("Lionel Messi")
@@ -215,17 +214,23 @@ class QuoteServiceTest {
                                 .position("ST")
                                 .build();
 
-                when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("110.00"));
-                when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
-                when(performanceStrategy.getVersion()).thenReturn("v1.0");
-                when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
-                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any()))
-                                .thenReturn(Optional.of(testQuote));
+                PlayerQuote messiQuote = PlayerQuote.builder()
+                                .id(2L)
+                                .player(player2)
+                                .value(new BigDecimal("120.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("120.00"))
+                                .build();
 
-                // Act
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer, player2));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(testQuote));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player2))
+                                .thenReturn(Optional.of(messiQuote));
+
                 List<PlayerRankingDTO> ranking = quoteService.getRanking();
 
-                // Assert
                 assertThat(ranking).hasSize(2);
                 assertThat(ranking.get(0).getPlayerName()).isEqualTo("Lionel Messi");
                 assertThat(ranking.get(0).getRank()).isEqualTo(1);
@@ -341,19 +346,15 @@ class QuoteServiceTest {
 
         @Test
         void testGetRanking_EmptyPlayerList() {
-                // Arrange
                 when(playerRepository.findAll()).thenReturn(Collections.emptyList());
 
-                // Act
                 List<PlayerRankingDTO> ranking = quoteService.getRanking();
 
-                // Assert
                 assertThat(ranking).isEmpty();
         }
 
         @Test
         void testGetRanking_CorrectRankAssignment() {
-                // Arrange - verify ranking is assigned correctly
                 Player player1 = Player.builder().id(1L).name("Player 1").league("PL").team("T1").position("ST")
                                 .build();
                 Player player2 = Player.builder().id(2L).name("Player 2").league("PL").team("T2").position("ST")
@@ -361,17 +362,23 @@ class QuoteServiceTest {
                 Player player3 = Player.builder().id(3L).name("Player 3").league("PL").team("T3").position("ST")
                                 .build();
 
-                when(performanceStrategy.calculate(player1)).thenReturn(new BigDecimal("80.00"));
-                when(performanceStrategy.calculate(player2)).thenReturn(new BigDecimal("120.00"));
-                when(performanceStrategy.calculate(player3)).thenReturn(new BigDecimal("100.00"));
-                when(performanceStrategy.getVersion()).thenReturn("v1.0");
-                when(playerRepository.findAll()).thenReturn(List.of(player1, player2, player3));
-                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
+                PlayerQuote quote1 = PlayerQuote.builder().id(1L).player(player1)
+                                .value(new BigDecimal("80.00")).quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0").baseScore(new BigDecimal("80.00")).build();
+                PlayerQuote quote2 = PlayerQuote.builder().id(2L).player(player2)
+                                .value(new BigDecimal("120.00")).quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0").baseScore(new BigDecimal("120.00")).build();
+                PlayerQuote quote3 = PlayerQuote.builder().id(3L).player(player3)
+                                .value(new BigDecimal("100.00")).quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0").baseScore(new BigDecimal("100.00")).build();
 
-                // Act
+                when(playerRepository.findAll()).thenReturn(List.of(player1, player2, player3));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player1)).thenReturn(Optional.of(quote1));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player2)).thenReturn(Optional.of(quote2));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player3)).thenReturn(Optional.of(quote3));
+
                 List<PlayerRankingDTO> ranking = quoteService.getRanking();
 
-                // Assert - should be sorted by score descending: 120, 100, 80
                 assertThat(ranking).hasSize(3);
                 assertThat(ranking.get(0).getPlayerName()).isEqualTo("Player 2");
                 assertThat(ranking.get(0).getRank()).isEqualTo(1);
@@ -427,21 +434,24 @@ class QuoteServiceTest {
 
         @Test
         void testGetRanking_SameScorePlayersSorted() {
-                // Arrange - players with same score
                 Player player1 = Player.builder().id(1L).name("Player A").league("PL").team("T1").position("ST")
                                 .build();
                 Player player2 = Player.builder().id(2L).name("Player B").league("PL").team("T2").position("ST")
                                 .build();
 
-                when(performanceStrategy.calculate(any())).thenReturn(new BigDecimal("100.00"));
-                when(performanceStrategy.getVersion()).thenReturn("v1.0");
-                when(playerRepository.findAll()).thenReturn(List.of(player1, player2));
-                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
+                PlayerQuote tiedQuote = PlayerQuote.builder()
+                                .id(1L).player(player1)
+                                .value(new BigDecimal("100.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("v1.0")
+                                .baseScore(new BigDecimal("100.00"))
+                                .build();
 
-                // Act
+                when(playerRepository.findAll()).thenReturn(List.of(player1, player2));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.of(tiedQuote));
+
                 List<PlayerRankingDTO> ranking = quoteService.getRanking();
 
-                // Assert - both should have rank 1 with same score
                 assertThat(ranking).hasSize(2);
                 assertThat(ranking.get(0).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
                 assertThat(ranking.get(1).getScore()).isEqualByComparingTo(new BigDecimal("100.00"));
@@ -449,23 +459,32 @@ class QuoteServiceTest {
 
         @Test
         void testSetActiveStrategy_SwitchBetweenStrategies() {
-                // Arrange
-                when(performanceStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("100.00"));
-                when(positionStrategy.calculate(testPlayer)).thenReturn(new BigDecimal("120.00"));
-                when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
-                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(any())).thenReturn(Optional.empty());
-                when(performanceStrategy.getVersion()).thenReturn("perf-v1");
-                when(positionStrategy.getVersion()).thenReturn("pos-v1");
+                PlayerQuote perfQuote = PlayerQuote.builder()
+                                .id(1L).player(testPlayer)
+                                .value(new BigDecimal("100.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("perf-v1")
+                                .baseScore(new BigDecimal("100.00"))
+                                .build();
+                PlayerQuote posQuote = PlayerQuote.builder()
+                                .id(2L).player(testPlayer)
+                                .value(new BigDecimal("120.00"))
+                                .quoteDate(LocalDateTime.now())
+                                .strategyVersion("pos-v1")
+                                .baseScore(new BigDecimal("120.00"))
+                                .build();
 
-                // Act 1 - use default performance strategy
+                when(playerRepository.findAll()).thenReturn(List.of(testPlayer));
+                when(playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(testPlayer))
+                                .thenReturn(Optional.of(perfQuote))
+                                .thenReturn(Optional.of(posQuote));
+
                 quoteService.setActiveStrategy("performanceBased");
                 List<PlayerRankingDTO> ranking1 = quoteService.getRanking();
 
-                // Act 2 - switch to position strategy
                 quoteService.setActiveStrategy("positionWeighted");
                 List<PlayerRankingDTO> ranking2 = quoteService.getRanking();
 
-                // Assert
                 assertThat(ranking1.get(0).getStrategyVersion()).isEqualTo("perf-v1");
                 assertThat(ranking2.get(0).getStrategyVersion()).isEqualTo("pos-v1");
         }

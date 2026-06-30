@@ -137,13 +137,13 @@ public class QuoteService {
 
     @Cacheable("ranking")
     public List<PlayerRankingDTO> getRanking() {
-        ValuationStrategy strategy = getActiveStrategy();
+        log.info("Computing ranking from DB - cache miss");
         List<Player> players = playerRepository.findAll();
 
         List<PlayerRankingDTO> ranking = new ArrayList<>();
         for (Player player : players) {
             Optional<PlayerQuote> latestQuote = playerQuoteRepository.findTopByPlayerOrderByQuoteDateDesc(player);
-            BigDecimal score = strategy.calculate(player);
+            BigDecimal score = latestQuote.map(PlayerQuote::getValue).orElse(BigDecimal.ZERO);
 
             ranking.add(PlayerRankingDTO.builder()
                     .playerId(player.getId())
@@ -151,9 +151,9 @@ public class QuoteService {
                     .league(player.getLeague())
                     .team(player.getTeam())
                     .position(player.getPosition())
-                    .currentQuote(latestQuote.map(PlayerQuote::getValue).orElse(score))
+                    .currentQuote(score)
                     .score(score)
-                    .strategyVersion(strategy.getVersion())
+                    .strategyVersion(latestQuote.map(PlayerQuote::getStrategyVersion).orElse("N/A"))
                     .build());
         }
 
@@ -171,6 +171,7 @@ public class QuoteService {
                 .orElse(BigDecimal.ONE);
     }
 
+    @CacheEvict(value = "ranking", allEntries = true)
     public void setActiveStrategy(String strategyName) {
         if (!strategyName.equals(PERFORMANCE_BASED_STRATEGY) && !strategyName.equals("positionWeighted")) {
             throw new IllegalArgumentException("Unknown strategy: " + strategyName);
