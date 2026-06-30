@@ -1,0 +1,16 @@
+target/
+.git/
+.gitignore
+.env
+.env.example
+.idea/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+README.md
+docs/
+.vscode/
+.github/
+.agents/
+skills-lock.json
+sonar-project.properties
+mvnw.cmd
