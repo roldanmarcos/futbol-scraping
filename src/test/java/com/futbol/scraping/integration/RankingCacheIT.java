@@ -8,6 +8,8 @@ import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.service.QuoteService;
 import com.futbol.scraping.strategy.ValuationStrategy;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,9 @@ class RankingCacheIT {
 
     @MockBean(name = "positionWeighted")
     private ValuationStrategy positionStrategy;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Autowired
     private QuoteService quoteService;
@@ -122,6 +127,11 @@ class RankingCacheIT {
             manager.setCaffeine(Caffeine.newBuilder().maximumSize(500));
             manager.registerCustomCache("ranking", Caffeine.newBuilder().maximumSize(1).build());
             return manager;
+        }
+
+        @Bean
+        public MeterRegistry meterRegistry() {
+            return new SimpleMeterRegistry();
         }
     }
 }
