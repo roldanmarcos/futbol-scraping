@@ -6,12 +6,7 @@ import com.futbol.scraping.dto.TransactionDTO;
 import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.model.*;
-import com.futbol.scraping.model.Player;
-import com.futbol.scraping.model.PlayerToken;
-import com.futbol.scraping.repository.PlayerRepository;
-import com.futbol.scraping.repository.PlayerTokenRepository;
-import com.futbol.scraping.repository.TransactionRepository;
-import com.futbol.scraping.repository.UserRepository;
+import com.futbol.scraping.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,42 +25,10 @@ import java.util.stream.Collectors;
 public class UserService {
 
         private final UserRepository userRepository;
-        private final PlayerRepository playerRepository;
         private final PlayerTokenRepository playerTokenRepository;
         private final TransactionRepository transactionRepository;
         private final QuoteService quoteService;
         private final PasswordEncoder passwordEncoder;
-
-        @Transactional(readOnly = true)
-        public Optional<User> findByUsername(String username) {
-                return userRepository.findByUsername(username);
-        }
-
-        @Transactional
-        public User saveUser(User user) {
-                return userRepository.save(user);
-        }
-
-        @Transactional
-        public void allocateTokens(User superuser, int tokensPerPlayer) {
-                List<Player> players = playerRepository.findAll();
-                int allocated = 0;
-                for (Player player : players) {
-                        if (playerTokenRepository.findByPlayerAndUser(player, superuser).isEmpty()) {
-                                PlayerToken token = PlayerToken.builder()
-                                                .player(player)
-                                                .user(superuser)
-                                                .quantity(tokensPerPlayer)
-                                                .avgBuyPrice(BigDecimal.ONE)
-                                                .build();
-                                playerTokenRepository.save(token);
-                                allocated++;
-                        }
-                }
-                if (allocated > 0) {
-                        log.info("Allocated {} token positions to superuser", allocated);
-                }
-        }
 
         @Transactional(readOnly = true)
         public PortfolioDTO getPortfolio(Long userId) {

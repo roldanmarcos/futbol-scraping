@@ -11,7 +11,6 @@ import com.futbol.scraping.repository.PlayerQuoteRepository;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.service.QuoteService;
 import com.futbol.scraping.strategy.ValuationStrategy;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,17 +44,14 @@ class QuoteServiceTest {
         private QuoteService quoteService;
         private Player testPlayer;
         private PlayerQuote testQuote;
-        private SimpleMeterRegistry meterRegistry;
 
         @BeforeEach
         void setUp() {
-                meterRegistry = new SimpleMeterRegistry();
                 quoteService = new QuoteService(
                                 playerRepository,
                                 playerQuoteRepository,
                                 performanceStrategy,
-                                positionStrategy,
-                                meterRegistry);
+                                positionStrategy);
 
                 testPlayer = Player.builder()
                                 .id(1L)

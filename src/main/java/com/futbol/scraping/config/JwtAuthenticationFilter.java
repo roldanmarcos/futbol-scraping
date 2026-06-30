@@ -1,7 +1,7 @@
 package com.futbol.scraping.config;
 
+import com.futbol.scraping.repository.UserRepository;
 import com.futbol.scraping.service.JwtService;
-import com.futbol.scraping.service.UserService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,7 +25,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String username = jwtService.extractUsername(token);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                userService.findByUsername(username).ifPresent(user -> {
+                userRepository.findByUsername(username).ifPresent(user -> {
                     if (jwtService.isTokenValid(token, user)) {
                         List<SimpleGrantedAuthority> authorities = Boolean.TRUE.equals(user.getIsSuperuser())
                                 ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"),

@@ -9,8 +9,6 @@ import com.futbol.scraping.model.PlayerQuote;
 import com.futbol.scraping.repository.PlayerQuoteRepository;
 import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.strategy.ValuationStrategy;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -37,8 +35,6 @@ public class QuoteService {
     private final PlayerQuoteRepository playerQuoteRepository;
     private final ValuationStrategy performanceStrategy;
     private final ValuationStrategy positionStrategy;
-    private final MeterRegistry meterRegistry;
-    private Timer recalculateTimer;
 
     private String activeStrategy = PERFORMANCE_BASED_STRATEGY;
 
@@ -46,28 +42,16 @@ public class QuoteService {
             PlayerRepository playerRepository,
             PlayerQuoteRepository playerQuoteRepository,
             @Qualifier(PERFORMANCE_BASED_STRATEGY) ValuationStrategy performanceStrategy,
-            @Qualifier("positionWeighted") ValuationStrategy positionStrategy,
-            MeterRegistry meterRegistry) {
+            @Qualifier("positionWeighted") ValuationStrategy positionStrategy) {
         this.playerRepository = playerRepository;
         this.playerQuoteRepository = playerQuoteRepository;
         this.performanceStrategy = performanceStrategy;
         this.positionStrategy = positionStrategy;
-        this.meterRegistry = meterRegistry;
-    }
-
-    private Timer recalculateTimer() {
-        if (recalculateTimer == null) {
-            recalculateTimer = Timer.builder("quotes.recalculate.duration")
-                    .description("Tiempo de ejecución del recálculo de cotizaciones")
-                    .register(meterRegistry);
-        }
-        return recalculateTimer;
     }
 
     @Transactional
     @CacheEvict(value = { "quotes", "ranking", "playerDetail" }, allEntries = true)
     public RecalculateResponse recalculate() {
-        Timer.Sample sample = Timer.start(meterRegistry);
         log.info("Starting quote recalculation with strategy: {}", activeStrategy);
         List<Player> players = playerRepository.findAll();
 
@@ -90,8 +74,6 @@ public class QuoteService {
                 log.error("Failed to calculate quote for player {}: {}", player.getName(), e.getMessage());
             }
         }
-
-        sample.stop(recalculateTimer());
 
         log.info("Quote recalculation complete. {} quotes generated for {} players", quotesGenerated.get(),
                 players.size());

@@ -33,7 +33,7 @@ public class AppConfig {
     }
 
     /**
-     * Override: rane hking cachas no TTL — it lives until an explicit @CacheEvict fires
+     * Override: ranking cache has no TTL — it lives until an explicit @CacheEvict fires
      * (on recalculate or strategy change). All other caches use the global Caffeine spec
      * defined in application.yml (maximumSize=500, expireAfterWrite=300s).
      */

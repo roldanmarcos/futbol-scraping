@@ -2,8 +2,8 @@ package com.futbol.scraping.config;
 
 import com.futbol.scraping.annotation.FutbolUnit;
 import com.futbol.scraping.model.User;
+import com.futbol.scraping.repository.UserRepository;
 import com.futbol.scraping.service.JwtService;
-import com.futbol.scraping.service.UserService;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,14 +27,14 @@ import static org.mockito.Mockito.when;
 class JwtAuthenticationFilterTest {
 
     private JwtService jwtService;
-    private UserService userService;
+    private UserRepository userRepository;
     private JwtAuthenticationFilter filter;
 
     @BeforeEach
     void setUp() {
         jwtService = mock(JwtService.class);
-        userService = mock(UserService.class);
-        filter = new JwtAuthenticationFilter(jwtService, userService);
+        userRepository = mock(UserRepository.class);
+        filter = new JwtAuthenticationFilter(jwtService, userRepository);
         SecurityContextHolder.clearContext();
     }
 
@@ -71,7 +71,7 @@ class JwtAuthenticationFilterTest {
                 .build();
 
         when(jwtService.extractUsername("token-123")).thenReturn("regular");
-        when(userService.findByUsername("regular")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("regular")).thenReturn(Optional.of(user));
         when(jwtService.isTokenValid("token-123", user)).thenReturn(true);
 
         filter.doFilter(request, response, chain);
@@ -100,7 +100,7 @@ class JwtAuthenticationFilterTest {
                 .build();
 
         when(jwtService.extractUsername("admin-token")).thenReturn("admin");
-        when(userService.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
         when(jwtService.isTokenValid("admin-token", admin)).thenReturn(true);
 
         filter.doFilter(request, response, chain);
@@ -128,7 +128,7 @@ class JwtAuthenticationFilterTest {
                 .build();
 
         when(jwtService.extractUsername("invalid-token")).thenReturn("user");
-        when(userService.findByUsername("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(jwtService.isTokenValid("invalid-token", user)).thenReturn(false);
 
         filter.doFilter(request, response, chain);

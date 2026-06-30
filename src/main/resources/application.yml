@@ -1,10 +1,11 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:futbol_scraping}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -12,14 +13,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
-
   cache:
     type: caffeine
     caffeine:
       spec: maximumSize=500,expireAfterWrite=300s
 
 server:
-  port: ${PORT:8080}
+  port: ${SERVER_PORT:8080}
 
 management:
   endpoints:
@@ -47,17 +47,17 @@ whoscored:
   base-url: https://www.whoscored.com
   number-of-players: 2757
   selenium:
-    headless: true
+    headless: false
     wait-seconds: 20
 
 app:
   jwt:
-    secret: ${JWT_SECRET:MiClaveSuperSecretaParaDesarrollo12345678901234567890}
+    secret: ${JWT_SECRET:change-me-change-me-change-me-change-me-please}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   superuser:
     username: superuser
     email: superuser@futbol.com
-    password: ${SUPERUSER_PASSWORD}
+    password: ${SUPERUSER_PASSWORD:superuser123}
     initial-balance: 1000000
   tokens-per-player: 100
   initial-token-price: 1.00
