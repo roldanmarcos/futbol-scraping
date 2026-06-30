@@ -21,6 +21,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -113,15 +116,23 @@ class RankingCacheIT {
         verify(playerRepository, times(2)).findAll();
     }
 
-    @Configuration
-    @EnableCaching
-    static class CacheTestConfig {
-        @Bean
-        public CacheManager cacheManager() {
-            CaffeineCacheManager manager = new CaffeineCacheManager();
-            manager.setCaffeine(Caffeine.newBuilder().maximumSize(500));
-            manager.registerCustomCache("ranking", Caffeine.newBuilder().maximumSize(1).build());
-            return manager;
-        }
+
+@Configuration
+@EnableCaching
+static class CacheTestConfig {
+
+    @Bean
+    CacheManager cacheManager() {
+        CaffeineCacheManager manager = new CaffeineCacheManager();
+        manager.setCaffeine(Caffeine.newBuilder().maximumSize(500));
+        manager.registerCustomCache("ranking",
+                Caffeine.newBuilder().maximumSize(1).build());
+        return manager;
     }
+
+    @Bean
+    MeterRegistry meterRegistry() {
+        return new SimpleMeterRegistry();
+    }
+}
 }
