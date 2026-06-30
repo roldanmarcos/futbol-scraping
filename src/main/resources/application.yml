@@ -55,7 +55,7 @@ whoscored:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:MiClaveSuperSecretaParaDesarrollo12345678901234567890}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   superuser:
     username: superuser
