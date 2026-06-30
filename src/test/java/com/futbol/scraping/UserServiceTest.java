@@ -6,6 +6,7 @@ import com.futbol.scraping.dto.TransactionDTO;
 import com.futbol.scraping.exception.BusinessException;
 import com.futbol.scraping.exception.ResourceNotFoundException;
 import com.futbol.scraping.model.*;
+import com.futbol.scraping.repository.PlayerRepository;
 import com.futbol.scraping.repository.PlayerTokenRepository;
 import com.futbol.scraping.repository.TransactionRepository;
 import com.futbol.scraping.repository.UserRepository;
@@ -33,6 +34,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PlayerRepository playerRepository;
 
     @Mock
     private PlayerTokenRepository playerTokenRepository;
@@ -245,5 +249,80 @@ class UserServiceTest {
             .hasMessageContaining("Username already exists");
         verify(userRepository).existsByUsername("testuser");
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testFindByUsername_ReturnsUser() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+
+        Optional<User> result = userService.findByUsername("testuser");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getUsername()).isEqualTo("testuser");
+        verify(userRepository).findByUsername("testuser");
+    }
+
+    @Test
+    void testFindByUsername_ReturnsEmpty() {
+        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+
+        Optional<User> result = userService.findByUsername("unknown");
+
+        assertThat(result).isEmpty();
+        verify(userRepository).findByUsername("unknown");
+    }
+
+    @Test
+    void testSaveUser_DelegatesToRepository() {
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        User result = userService.saveUser(testUser);
+
+        assertThat(result).isSameAs(testUser);
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    void testAllocateTokens_CreatesTokensForPlayersWithoutOnes() {
+        User superuser = User.builder().id(99L).username("super").build();
+        Player p1 = Player.builder().id(10L).name("Player1").build();
+        Player p2 = Player.builder().id(20L).name("Player2").build();
+
+        when(playerRepository.findAll()).thenReturn(List.of(p1, p2));
+        when(playerTokenRepository.findByPlayerAndUser(p1, superuser)).thenReturn(Optional.empty());
+        when(playerTokenRepository.findByPlayerAndUser(p2, superuser)).thenReturn(Optional.empty());
+
+        userService.allocateTokens(superuser, 100);
+
+        verify(playerRepository).findAll();
+        verify(playerTokenRepository, times(2)).save(any(PlayerToken.class));
+    }
+
+    @Test
+    void testAllocateTokens_SkipsPlayersWithExistingTokens() {
+        User superuser = User.builder().id(99L).username("super").build();
+        Player p1 = Player.builder().id(10L).name("Player1").build();
+        Player p2 = Player.builder().id(20L).name("Player2").build();
+        PlayerToken existing = PlayerToken.builder().player(p1).user(superuser).quantity(50).build();
+
+        when(playerRepository.findAll()).thenReturn(List.of(p1, p2));
+        when(playerTokenRepository.findByPlayerAndUser(p1, superuser)).thenReturn(Optional.of(existing));
+        when(playerTokenRepository.findByPlayerAndUser(p2, superuser)).thenReturn(Optional.empty());
+
+        userService.allocateTokens(superuser, 100);
+
+        verify(playerTokenRepository, times(1)).save(any(PlayerToken.class));
+    }
+
+    @Test
+    void testAllocateTokens_SkipsWhenNoPlayers() {
+        User superuser = User.builder().id(99L).username("super").build();
+
+        when(playerRepository.findAll()).thenReturn(List.of());
+
+        userService.allocateTokens(superuser, 100);
+
+        verify(playerRepository).findAll();
+        verify(playerTokenRepository, never()).save(any());
     }
 }

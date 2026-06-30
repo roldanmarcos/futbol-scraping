@@ -623,4 +623,37 @@ class PlayerServiceTest {
                 // Assert
                 assertThat(result).hasSize(1);
         }
+
+        @Test
+        void testCountPlayers_ReturnsCount() {
+                when(playerRepository.count()).thenReturn(42L);
+
+                long result = playerService.countPlayers();
+
+                assertThat(result).isEqualTo(42L);
+                verify(playerRepository).count();
+        }
+
+        @Test
+        void testFindAllPlayers_ReturnsAll() {
+                Player p1 = Player.builder().id(1L).name("Player1").build();
+                Player p2 = Player.builder().id(2L).name("Player2").build();
+                when(playerRepository.findAll()).thenReturn(List.of(p1, p2));
+
+                List<Player> result = playerService.findAllPlayers();
+
+                assertThat(result).hasSize(2);
+                assertThat(result.get(0).getName()).isEqualTo("Player1");
+                verify(playerRepository).findAll();
+        }
+
+        @Test
+        void testFindAllPlayers_ReturnsEmptyList() {
+                when(playerRepository.findAll()).thenReturn(List.of());
+
+                List<Player> result = playerService.findAllPlayers();
+
+                assertThat(result).isEmpty();
+                verify(playerRepository).findAll();
+        }
 }
