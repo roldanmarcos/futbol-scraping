@@ -62,6 +62,7 @@ class OrderServiceTest {
         private User seller;
         private User superuser;
         private Player player;
+        private Transaction transaction;
         private PlayerToken buyerToken;
         private PlayerToken sellerToken;
         private PlayerToken superuserToken;
