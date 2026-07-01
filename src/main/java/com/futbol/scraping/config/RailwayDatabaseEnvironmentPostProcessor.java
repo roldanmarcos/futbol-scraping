@@ -1,7 +1,9 @@
 package com.futbol.scraping.config;
 
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,28 +22,22 @@ public class RailwayDatabaseEnvironmentPostProcessor implements EnvironmentPostP
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         Map<String, Object> overrides = new HashMap<>();
 
-        String existingUrl = environment.getProperty("spring.datasource.url");
-        String datasourceUrl = resolveDatasourceUrl(environment, existingUrl);
+        String datasourceUrl = resolveDatasourceUrl(environment);
         if (StringUtils.hasText(datasourceUrl)) {
             overrides.put("spring.datasource.url", datasourceUrl);
         }
 
-        if (!StringUtils.hasText(environment.getProperty("spring.datasource.username"))) {
-            String username = resolveDatasourceUsername(environment);
-            if (StringUtils.hasText(username)) {
-                overrides.put("spring.datasource.username", username);
-            }
+        String username = resolveDatasourceUsername(environment);
+        if (StringUtils.hasText(username)) {
+            overrides.put("spring.datasource.username", username);
         }
 
-        if (!StringUtils.hasText(environment.getProperty("spring.datasource.password"))) {
-            String password = resolveDatasourcePassword(environment);
-            if (StringUtils.hasText(password)) {
-                overrides.put("spring.datasource.password", password);
-            }
+        String password = resolveDatasourcePassword(environment);
+        if (StringUtils.hasText(password)) {
+            overrides.put("spring.datasource.password", password);
         }
 
-        if (StringUtils.hasText(datasourceUrl)
-                && !StringUtils.hasText(environment.getProperty("spring.datasource.driver-class-name"))) {
+        if (StringUtils.hasText(datasourceUrl)) {
             overrides.put("spring.datasource.driver-class-name", "org.postgresql.Driver");
         }
 
@@ -55,11 +51,7 @@ public class RailwayDatabaseEnvironmentPostProcessor implements EnvironmentPostP
         return Ordered.HIGHEST_PRECEDENCE;
     }
 
-    private String resolveDatasourceUrl(ConfigurableEnvironment environment, String existingUrl) {
-        if (StringUtils.hasText(existingUrl)) {
-            return existingUrl;
-        }
-
+    private String resolveDatasourceUrl(ConfigurableEnvironment environment) {
         String springDatasourceUrl = environment.getProperty("SPRING_DATASOURCE_URL");
         if (StringUtils.hasText(springDatasourceUrl)) {
             return springDatasourceUrl;
@@ -98,6 +90,11 @@ public class RailwayDatabaseEnvironmentPostProcessor implements EnvironmentPostP
             return username;
         }
 
+        username = extractUserInfo(environment.getProperty("DATABASE_URL"), true);
+        if (StringUtils.hasText(username)) {
+            return username;
+        }
+
         return environment.getProperty("DB_USER");
     }
 
@@ -113,6 +110,11 @@ public class RailwayDatabaseEnvironmentPostProcessor implements EnvironmentPostP
         }
 
         password = environment.getProperty("PGPASSWORD");
+        if (StringUtils.hasText(password)) {
+            return password;
+        }
+
+        password = extractUserInfo(environment.getProperty("DATABASE_URL"), false);
         if (StringUtils.hasText(password)) {
             return password;
         }
@@ -149,5 +151,40 @@ public class RailwayDatabaseEnvironmentPostProcessor implements EnvironmentPostP
         } catch (URISyntaxException ex) {
             return databaseUrl;
         }
+    }
+
+    private String extractUserInfo(String databaseUrl, boolean username) {
+        if (!StringUtils.hasText(databaseUrl)) {
+            return null;
+        }
+
+        try {
+            URI uri = new URI(databaseUrl);
+            String userInfo = uri.getUserInfo();
+            if (!StringUtils.hasText(userInfo)) {
+                return null;
+            }
+
+            String[] parts = userInfo.split(":", 2);
+            if (username) {
+                return decode(parts[0]);
+            }
+
+            if (parts.length < 2) {
+                return null;
+            }
+
+            return decode(parts[1]);
+        } catch (URISyntaxException ex) {
+            return null;
+        }
+    }
+
+    private String decode(String value) {
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+
+        return URLDecoder.decode(value, StandardCharsets.UTF_8);
     }
 }
