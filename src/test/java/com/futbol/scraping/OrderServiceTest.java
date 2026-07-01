@@ -22,8 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -62,7 +60,6 @@ class OrderServiceTest {
         private User seller;
         private User superuser;
         private Player player;
-        private Transaction transaction;
         private PlayerToken buyerToken;
         private PlayerToken sellerToken;
         private PlayerToken superuserToken;
@@ -105,17 +102,6 @@ class OrderServiceTest {
                                 .orderType(TradeOrder.OrderType.BUY)
                                 .quantity(10).filledQuantity(0)
                                 .status(TradeOrder.OrderStatus.PENDING).build();
-
-                transaction = Transaction.builder()
-                                .id(1L)
-                                .user(buyer)
-                                .player(player)
-                                .transactionType(Transaction.TransactionType.BUY)
-                                .quantity(5)
-                                .pricePerToken(new BigDecimal("50.00"))
-                                .totalAmount(new BigDecimal("250.00"))
-                                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
-                                .build();
 
                 ReflectionTestUtils.setField(orderService, "buySuccessCounter", counter);
                 ReflectionTestUtils.setField(orderService, "sellSuccessCounter", counter);

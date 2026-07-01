@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,26 +15,10 @@ class UserRepositoryIT {
 
     @Autowired
     private UserRepository userRepository;
-    private User regularUser;
-    private User superuser;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        regularUser = userRepository.save(User.builder()
-                .username("pepe")
-                .email("pepe@test.com")
-                .passwordHash("hash-pepe")
-                .balance(new BigDecimal("1000.00"))
-                .isSuperuser(false)
-                .build());
-        superuser = userRepository.save(User.builder()
-                .username("admin")
-                .email("admin@test.com")
-                .passwordHash("hash-admin")
-                .balance(new BigDecimal("9999999.00"))
-                .isSuperuser(true)
-                .build());
     }
 
     @Test
