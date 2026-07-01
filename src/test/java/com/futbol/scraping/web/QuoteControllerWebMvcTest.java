@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -39,7 +40,7 @@ class QuoteControllerWebMvcTest {
                 .playersProcessed(20)
                 .quotesGenerated(20)
                 .strategyUsed("positionWeighted")
-                .calculatedAt(LocalDateTime.of(2024, 10, 21, 11, 0))
+                .calculatedAt(LocalDateTime.of(2024, Month.OCTOBER, 21, 11, 0))
                 .status("SUCCESS")
                 .build();
 

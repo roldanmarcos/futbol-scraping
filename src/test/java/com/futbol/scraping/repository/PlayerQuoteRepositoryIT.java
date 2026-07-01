@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +39,9 @@ class PlayerQuoteRepositoryIT {
         messi = playerRepository.save(Player.builder().name("Messi").league("MLS").team("Inter Miami").position("FW").build());
         ronaldo = playerRepository.save(Player.builder().name("Ronaldo").league("Saudi Pro").team("Al Nassr").position("FW").build());
 
-        day1 = LocalDateTime.of(2024, 1, 1, 12, 0);
-        day2 = LocalDateTime.of(2024, 2, 1, 12, 0);
-        day3 = LocalDateTime.of(2024, 3, 1, 12, 0);
+        day1 = LocalDateTime.of(2024, Month.JANUARY, 1, 12, 0);
+        day2 = LocalDateTime.of(2024, Month.FEBRUARY, 1, 12, 0);
+        day3 = LocalDateTime.of(2024, Month.MARCH, 1, 12, 0);
 
         playerQuoteRepository.save(PlayerQuote.builder().player(messi).value(new BigDecimal("100.00")).quoteDate(day1).strategyVersion("v1").build());
         playerQuoteRepository.save(PlayerQuote.builder().player(messi).value(new BigDecimal("120.00")).quoteDate(day2).strategyVersion("v1").build());
@@ -93,7 +94,7 @@ class PlayerQuoteRepositoryIT {
     @Test
     void findByPlayerAndDateBefore_returnsQuotesUpToDate() {
         // día de corte: 1 Feb 23:59 → debería devolver day1 y day2, no day3
-        LocalDateTime cutoff = LocalDateTime.of(2024, 2, 1, 23, 59);
+        LocalDateTime cutoff = LocalDateTime.of(2024, Month.FEBRUARY, 1, 23, 59);
         List<PlayerQuote> quotes = playerQuoteRepository.findByPlayerAndDateBefore(messi, cutoff);
 
         assertThat(quotes).hasSize(2);
@@ -103,7 +104,7 @@ class PlayerQuoteRepositoryIT {
 
     @Test
     void findByPlayerAndDateBefore_withCutoffBeforeAllQuotes_returnsEmpty() {
-        LocalDateTime cutoff = LocalDateTime.of(2023, 12, 31, 23, 59);
+        LocalDateTime cutoff = LocalDateTime.of(2023, Month.DECEMBER, 31, 23, 59);
 
         assertThat(playerQuoteRepository.findByPlayerAndDateBefore(messi, cutoff)).isEmpty();
     }

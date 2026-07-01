@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import static org.mockito.Mockito.doThrow;
@@ -85,7 +86,7 @@ class UserControllerWebMvcTest {
                 .quantity(2)
                 .pricePerToken(new BigDecimal("120.00"))
                 .totalAmount(new BigDecimal("240.00"))
-                .createdAt(LocalDateTime.of(2024, 10, 20, 18, 30))
+                .createdAt(LocalDateTime.of(2024, Month.OCTOBER, 20, 18, 30))
                 .build();
 
         when(userService.getTransactions(1L)).thenReturn(List.of(tx));

@@ -4,6 +4,7 @@ import com.futbol.scraping.annotation.FutbolUnit;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +23,7 @@ class PlayerTokenTest {
 
     @Test
     void onUpdateShouldRefreshUpdatedAt() {
-        LocalDateTime oldDate = LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime oldDate = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
         PlayerToken token = PlayerToken.builder().updatedAt(oldDate).build();
 
         token.onUpdate();

@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 
 import static org.mockito.Mockito.verify;
@@ -81,7 +82,7 @@ class PlayerControllerWebMvcTest {
     @Test
     void getPlayerQuotes_WithDate_ReturnsSingleQuote() throws Exception {
         // Arrange - LocalDate que envía el cliente
-        LocalDate inputDate = LocalDate.of(2024, 10, 2);
+        LocalDate inputDate = LocalDate.of(2024, Month.OCTOBER, 2);
         // LocalDateTime convertido por el controlador: atTime(23, 59, 59)
         LocalDateTime expectedDateTime = inputDate.atTime(23, 59, 59);
 
