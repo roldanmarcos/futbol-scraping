@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class AuditAspect {
         String method = joinPoint.getSignature().toShortString();
         String params = Arrays.toString(joinPoint.getArgs());
         String user = resolveCurrentUser();
-        String timestamp = LocalDateTime.now().format(fmt);
+        String timestamp = LocalDateTime.now(ZoneOffset.UTC).format(fmt);
 
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();

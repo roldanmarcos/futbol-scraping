@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -113,7 +114,7 @@ class OrderServiceTest {
                 .quantity(5)
                 .pricePerToken(new BigDecimal("50.00"))
                 .totalAmount(new BigDecimal("250.00"))
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
 
         ReflectionTestUtils.setField(orderService, "buySuccessCounter", counter);

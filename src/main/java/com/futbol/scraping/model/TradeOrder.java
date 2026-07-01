@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "trade_orders")
@@ -44,7 +45,7 @@ public class TradeOrder {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
         if (this.filledQuantity == null) this.filledQuantity = 0;
         if (this.status == null) this.status = OrderStatus.PENDING;
     }

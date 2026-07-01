@@ -27,6 +27,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,7 +70,7 @@ class RankingCacheIT {
         messiQuote = PlayerQuote.builder()
                 .id(1L).player(messi)
                 .value(new BigDecimal("150.00"))
-                .quoteDate(LocalDateTime.now())
+                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                 .strategyVersion("v1.0")
                 .baseScore(new BigDecimal("150.00"))
                 .build();
