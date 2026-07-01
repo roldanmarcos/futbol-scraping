@@ -155,7 +155,7 @@ class OrderServiceTest {
                 OrderResponse response = orderService.buy(request);
 
                 assertThat(response.getFilledQuantity()).isEqualTo(5);
-                assertThat(response.getRemainingQuantity()).isEqualTo(0);
+                assertThat(response.getRemainingQuantity()).isZero();
                 assertThat(response.getStatus()).isEqualTo("FILLED");
                 assertThat(response.getPrice()).isEqualByComparingTo(new BigDecimal("50.00"));
                 assertThat(response.getTotalAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
@@ -188,7 +188,7 @@ class OrderServiceTest {
                 OrderResponse response = orderService.buy(request);
 
                 assertThat(response.getFilledQuantity()).isEqualTo(5);
-                assertThat(response.getRemainingQuantity()).isEqualTo(0);
+                assertThat(response.getRemainingQuantity()).isZero();
                 assertThat(response.getStatus()).isEqualTo("FILLED");
 
                 ArgumentCaptor<PlayerToken> captor = ArgumentCaptor.forClass(PlayerToken.class);
@@ -226,10 +226,10 @@ class OrderServiceTest {
                 OrderResponse response = orderService.buy(request);
 
                 assertThat(response.getFilledQuantity()).isEqualTo(25);
-                assertThat(response.getRemainingQuantity()).isEqualTo(0);
+                assertThat(response.getRemainingQuantity()).isZero();
                 assertThat(response.getStatus()).isEqualTo("FILLED");
                 // 20 from sell order + 5 from superuser
-                assertThat(sellerToken.getQuantity()).isEqualTo(0);
+                assertThat(sellerToken.getQuantity()).isZero();
                 assertThat(superuserToken.getQuantity()).isEqualTo(95);
                 assertThat(buyerToken.getQuantity()).isEqualTo(35);
 
@@ -254,7 +254,7 @@ class OrderServiceTest {
 
                 OrderResponse response = orderService.buy(request);
 
-                assertThat(response.getFilledQuantity()).isEqualTo(0);
+                assertThat(response.getFilledQuantity()).isZero();
                 assertThat(response.getRemainingQuantity()).isEqualTo(10);
                 assertThat(response.getStatus()).isEqualTo("PENDING");
         }
@@ -359,7 +359,7 @@ class OrderServiceTest {
                 OrderResponse response = orderService.sell(request);
 
                 assertThat(response.getFilledQuantity()).isEqualTo(5);
-                assertThat(response.getRemainingQuantity()).isEqualTo(0);
+                assertThat(response.getRemainingQuantity()).isZero();
                 assertThat(response.getStatus()).isEqualTo("FILLED");
                 assertThat(response.getPrice()).isEqualByComparingTo(new BigDecimal("50.00"));
                 assertThat(response.getTotalAmount()).isEqualByComparingTo(new BigDecimal("250.00"));
@@ -383,7 +383,7 @@ class OrderServiceTest {
 
                 OrderResponse response = orderService.sell(request);
 
-                assertThat(response.getFilledQuantity()).isEqualTo(0);
+                assertThat(response.getFilledQuantity()).isZero();
                 assertThat(response.getRemainingQuantity()).isEqualTo(5);
                 assertThat(response.getStatus()).isEqualTo("PENDING");
         }
