@@ -17,9 +17,6 @@ class UserRepositoryIT {
     @Autowired
     private UserRepository userRepository;
 
-    private User regularUser;
-    private User superuser;
-
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
