@@ -29,6 +29,9 @@ public class OrderService {
     private final PlayerTokenRepository playerTokenRepository;
     private final TransactionRepository transactionRepository;
     private final TradeOrderRepository tradeOrderRepository;
+    private static final String PLAYER_NOT_FOUND = "Player not found: ";
+    private static final String USER_NOT_FOUND = "User not found: ";
+
     private final QuoteService quoteService;
     private final MeterRegistry meterRegistry;
     private Counter buySuccessCounter;
@@ -62,10 +65,10 @@ public class OrderService {
         }
 
         Player player = playerRepository.findById(request.getPlayerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found: " + request.getPlayerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND + request.getPlayerId()));
 
         User buyer = userRepository.findById(request.getBuyerId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getBuyerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND + request.getBuyerId()));
 
         BigDecimal price = quoteService.getCurrentPrice(player);
 
@@ -202,10 +205,10 @@ public class OrderService {
         }
 
         Player player = playerRepository.findById(request.getPlayerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found: " + request.getPlayerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND + request.getPlayerId()));
 
         User seller = userRepository.findById(request.getSellerId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getSellerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND + request.getSellerId()));
 
         PlayerToken sellerToken = playerTokenRepository
                 .findByPlayerAndUserWithLock(player, seller)
@@ -311,7 +314,7 @@ public class OrderService {
 
         if (!order.getUser().getId().equals(userId)) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+                    .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND + userId));
             if (!Boolean.TRUE.equals(user.getIsSuperuser())) {
                 throw new BusinessException("You can only cancel your own orders");
             }
@@ -332,7 +335,7 @@ public class OrderService {
 
     public OrderBookResponse getOrderBook(Long playerId) {
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Player not found: " + playerId));
+                .orElseThrow(() -> new ResourceNotFoundException(PLAYER_NOT_FOUND + playerId));
 
         BigDecimal price = quoteService.getCurrentPrice(player);
 

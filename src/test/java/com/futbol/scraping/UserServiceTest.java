@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
@@ -87,7 +88,7 @@ class UserServiceTest {
                 .quantity(5)
                 .pricePerToken(new BigDecimal("50.00"))
                 .totalAmount(new BigDecimal("250.00"))
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
     }
 

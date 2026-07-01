@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
@@ -69,7 +70,7 @@ class QuoteServiceTest {
                                 .id(1L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("100.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("100.00"))
                                 .build();
@@ -128,7 +129,7 @@ class QuoteServiceTest {
                                 .id(2L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("105.00"))
-                                .quoteDate(LocalDateTime.now().minusDays(1))
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC).minusDays(1))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("105.00"))
                                 .build();
@@ -178,7 +179,7 @@ class QuoteServiceTest {
         @Test
         void testGetQuoteAtDate_Success() {
                 // Arrange
-                LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
+                LocalDateTime targetDate = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
                 when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
                 when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
                                 .thenReturn(List.of(testQuote));
@@ -194,7 +195,7 @@ class QuoteServiceTest {
         @Test
         void testGetQuoteAtDate_NotFound() {
                 // Arrange
-                LocalDateTime targetDate = LocalDateTime.now().minusDays(10);
+                LocalDateTime targetDate = LocalDateTime.now(ZoneOffset.UTC).minusDays(10);
                 when(playerRepository.findById(1L)).thenReturn(Optional.of(testPlayer));
                 when(playerQuoteRepository.findByPlayerAndDateBefore(testPlayer, targetDate))
                                 .thenReturn(Collections.emptyList());
@@ -218,7 +219,7 @@ class QuoteServiceTest {
                                 .id(2L)
                                 .player(player2)
                                 .value(new BigDecimal("120.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("120.00"))
                                 .build();
@@ -336,7 +337,7 @@ class QuoteServiceTest {
         @Test
         void testGetQuoteAtDate_PlayerNotFound() {
                 // Arrange
-                LocalDateTime date = LocalDateTime.now();
+                LocalDateTime date = LocalDateTime.now(ZoneOffset.UTC);
                 when(playerRepository.findById(999L)).thenReturn(Optional.empty());
 
                 // Act & Assert
@@ -363,13 +364,13 @@ class QuoteServiceTest {
                                 .build();
 
                 PlayerQuote quote1 = PlayerQuote.builder().id(1L).player(player1)
-                                .value(new BigDecimal("80.00")).quoteDate(LocalDateTime.now())
+                                .value(new BigDecimal("80.00")).quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0").baseScore(new BigDecimal("80.00")).build();
                 PlayerQuote quote2 = PlayerQuote.builder().id(2L).player(player2)
-                                .value(new BigDecimal("120.00")).quoteDate(LocalDateTime.now())
+                                .value(new BigDecimal("120.00")).quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0").baseScore(new BigDecimal("120.00")).build();
                 PlayerQuote quote3 = PlayerQuote.builder().id(3L).player(player3)
-                                .value(new BigDecimal("100.00")).quoteDate(LocalDateTime.now())
+                                .value(new BigDecimal("100.00")).quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0").baseScore(new BigDecimal("100.00")).build();
 
                 when(playerRepository.findAll()).thenReturn(List.of(player1, player2, player3));
@@ -395,7 +396,7 @@ class QuoteServiceTest {
                                 .id(1L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("-50.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("-50.00"))
                                 .build();
@@ -417,7 +418,7 @@ class QuoteServiceTest {
                                 .id(1L)
                                 .player(testPlayer)
                                 .value(BigDecimal.ZERO)
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(BigDecimal.ZERO)
                                 .build();
@@ -442,7 +443,7 @@ class QuoteServiceTest {
                 PlayerQuote tiedQuote = PlayerQuote.builder()
                                 .id(1L).player(player1)
                                 .value(new BigDecimal("100.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("100.00"))
                                 .build();
@@ -462,14 +463,14 @@ class QuoteServiceTest {
                 PlayerQuote perfQuote = PlayerQuote.builder()
                                 .id(1L).player(testPlayer)
                                 .value(new BigDecimal("100.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("perf-v1")
                                 .baseScore(new BigDecimal("100.00"))
                                 .build();
                 PlayerQuote posQuote = PlayerQuote.builder()
                                 .id(2L).player(testPlayer)
                                 .value(new BigDecimal("120.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("pos-v1")
                                 .baseScore(new BigDecimal("120.00"))
                                 .build();
@@ -492,12 +493,12 @@ class QuoteServiceTest {
         @Test
         void testGetQuoteAtDate_MultipleQuotesReturnsFirst() {
                 // Arrange - multiple quotes before date
-                LocalDateTime targetDate = LocalDateTime.now().plusDays(1);
+                LocalDateTime targetDate = LocalDateTime.now(ZoneOffset.UTC).plusDays(1);
                 PlayerQuote quote1 = PlayerQuote.builder()
                                 .id(1L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("110.00"))
-                                .quoteDate(LocalDateTime.now().minusDays(1))
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC).minusDays(1))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("110.00"))
                                 .build();
@@ -506,7 +507,7 @@ class QuoteServiceTest {
                                 .id(2L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("100.00"))
-                                .quoteDate(LocalDateTime.now().minusDays(2))
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC).minusDays(2))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("100.00"))
                                 .build();

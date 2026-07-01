@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +43,7 @@ class UserTest {
 
     @Test
     void onUpdateShouldRefreshUpdatedAt() {
-        LocalDateTime oldDate = LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime oldDate = LocalDateTime.of(2000, Month.JANUARY, 1, 0, 0);
         User user = User.builder().updatedAt(oldDate).build();
 
         user.onUpdate();

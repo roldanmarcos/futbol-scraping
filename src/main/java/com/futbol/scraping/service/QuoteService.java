@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -81,7 +82,7 @@ public class QuoteService {
                 PlayerQuote quote = PlayerQuote.builder()
                         .player(player)
                         .value(value)
-                        .quoteDate(LocalDateTime.now())
+                        .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                         .strategyVersion(strategy.getVersion())
                         .baseScore(value)
                         .build();
@@ -100,7 +101,7 @@ public class QuoteService {
                 .playersProcessed(players.size())
                 .quotesGenerated(quotesGenerated.get())
                 .strategyUsed(strategy.getVersion())
-                .calculatedAt(LocalDateTime.now())
+                .calculatedAt(LocalDateTime.now(ZoneOffset.UTC))
                 .status("SUCCESS")
                 .build();
     }

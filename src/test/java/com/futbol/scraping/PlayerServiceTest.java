@@ -19,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
@@ -61,7 +62,7 @@ class PlayerServiceTest {
                                 .id(1L)
                                 .player(testPlayer)
                                 .value(new BigDecimal("150.00"))
-                                .quoteDate(LocalDateTime.now())
+                                .quoteDate(LocalDateTime.now(ZoneOffset.UTC))
                                 .strategyVersion("v1.0")
                                 .baseScore(new BigDecimal("150.00"))
                                 .build();
@@ -320,7 +321,7 @@ class PlayerServiceTest {
                                         .id((long) i)
                                         .player(testPlayer)
                                         .value(new BigDecimal("100.00"))
-                                        .quoteDate(LocalDateTime.now().minusDays(i))
+                                        .quoteDate(LocalDateTime.now(ZoneOffset.UTC).minusDays(i))
                                         .strategyVersion("v1.0")
                                         .baseScore(new BigDecimal("100.00"))
                                         .build());
