@@ -89,7 +89,7 @@ class PlayerTokenRepositoryIT {
     void sumQuantityByPlayer_withNoTokens_returnsZero() {
         Player newPlayer = playerRepository.save(Player.builder().name("Neymar").league("MLS").team("Santos").position("FW").build());
 
-        assertThat(playerTokenRepository.sumQuantityByPlayer(newPlayer)).isEqualTo(0);
+        assertThat(playerTokenRepository.sumQuantityByPlayer(newPlayer)).isZero();
     }
 
     @Test
