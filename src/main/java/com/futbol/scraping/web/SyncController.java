@@ -1,10 +1,7 @@
 package com.futbol.scraping.web;
 
-import com.futbol.scraping.dto.CreateUserRequest;
 import com.futbol.scraping.dto.SyncPlayersResponse;
-import com.futbol.scraping.dto.UserCreationResponse;
 import com.futbol.scraping.service.ScrapingService;
-import com.futbol.scraping.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class SyncController {
 
     private final ScrapingService scrapingService;
-    private final UserService userService;
 
     @PostMapping("/sync/players")
     @Operation(summary = "Sincronizar jugadores", description = "Actualiza los jugadores de una liga concreta o de todas las ligas si no se indica ninguna.")
