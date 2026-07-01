@@ -19,7 +19,7 @@ spring:
       spec: maximumSize=500,expireAfterWrite=300s,recordStats
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
 
 management:
   endpoints:
@@ -47,7 +47,7 @@ whoscored:
   base-url: https://www.whoscored.com
   number-of-players: 2757
   selenium:
-    headless: false
+    headless: ${WHOSCORED_HEADLESS:true}
     wait-seconds: 20
 
 app:

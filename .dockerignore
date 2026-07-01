@@ -1,0 +1,46 @@
+# Git
+.git/
+.gitignore
+.github/
+
+# Build
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / frontend (si existiera)
+node_modules/
+
+# Logs
+*.log
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+docs/
+
+# Local env (no debe ir a produccion)
+.env
+.env.*
+
+# Metrics / monitoring (solo local)
+prometheus.yml
+grafana/
