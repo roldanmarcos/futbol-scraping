@@ -1,0 +1,186 @@
+{
+  "title": "Fútbol Scraping - Métricas",
+  "uid": "futbol-scraping",
+  "version": 1,
+  "tags": ["futbol", "scraping"],
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "title": "Cache Hits vs Misses (ranking)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "cache_gets_total{cache=\"ranking\",result=\"hit\"}",
+          "legendFormat": "Hits"
+        },
+        {
+          "expr": "cache_gets_total{cache=\"ranking\",result=\"miss\"}",
+          "legendFormat": "Misses"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      }
+    },
+    {
+      "title": "Hit Ratio (ranking)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 0 },
+      "targets": [
+        {
+          "expr": "cache_gets_total{cache=\"ranking\",result=\"hit\"} / (cache_gets_total{cache=\"ranking\",result=\"hit\"} + cache_gets_total{cache=\"ranking\",result=\"miss\"} > 0) * 100",
+          "legendFormat": "Hit %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Tamaño de Caché",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "cache_size{cache=\"ranking\"}",
+          "legendFormat": "Ranking"
+        },
+        {
+          "expr": "cache_size{cache=\"quotes\"}",
+          "legendFormat": "Quotes"
+        }
+      ]
+    },
+    {
+      "title": "Créditos Totales del Mercado",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "market_total_credits"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      }
+    },
+    {
+      "title": "Órdenes de Compra (total)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "expr": "orders_buy_success_total",
+          "legendFormat": "Buy"
+        }
+      ]
+    },
+    {
+      "title": "Órdenes de Venta (total)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 0 },
+      "targets": [
+        {
+          "expr": "orders_sell_success_total",
+          "legendFormat": "Sell"
+        }
+      ]
+    },
+    {
+      "title": "Recálculos - Duración (último)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "expr": "quotes_recalculate_duration_seconds_max",
+          "legendFormat": "Último"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "title": "Recálculos - Duración Promedio",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 4, "y": 6 },
+      "targets": [
+        {
+          "expr": "quotes_recalculate_duration_seconds_sum / quotes_recalculate_duration_seconds_count"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "title": "Recálculos - Total ejecutados",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 6 },
+      "targets": [
+        {
+          "expr": "quotes_recalculate_duration_seconds_count"
+        }
+      ]
+    },
+    {
+      "title": "Duración de Recálculo - Percentiles",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(quotes_recalculate_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(quotes_recalculate_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(quotes_recalculate_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "title": "Órdenes Buy/Sell en el tiempo",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "expr": "increase(orders_buy_success_total[5m])",
+          "legendFormat": "Buy"
+        },
+        {
+          "expr": "increase(orders_sell_success_total[5m])",
+          "legendFormat": "Sell"
+        }
+      ]
+    }
+  ]
+}

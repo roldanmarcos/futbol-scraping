@@ -59,6 +59,7 @@ public class QuoteService {
         if (recalculateTimer == null) {
             recalculateTimer = Timer.builder("quotes.recalculate.duration")
                     .description("Tiempo de ejecución del recálculo de cotizaciones")
+                    .publishPercentileHistogram()
                     .register(meterRegistry);
         }
         return recalculateTimer;
