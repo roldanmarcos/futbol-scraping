@@ -4,13 +4,11 @@
 FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
-# Primero las dependencias (aprovecha cache de capas)
-COPY pom.xml ./
-RUN mvn dependency:resolve-plugins dependency:resolve -B -q
+# Copiar todo el proyecto
+COPY . .
 
-# Ahora el código fuente
-COPY src src/
-RUN mvn package -DskipTests -B -q && mv target/*.jar app.jar
+# Compilar y empaquetar (sin tests para acelerar en Docker)
+RUN mvn clean package -DskipTests -B -q && mv target/*.jar app.jar
 
 # ============================================================
 # STAGE 2: Runtime liviano con JRE 21 + Chrome
@@ -19,7 +17,8 @@ FROM eclipse-temurin:21-jre-jammy AS runtime
 WORKDIR /app
 
 # ------------------------------------------------------------
-# Instalar Google Chrome + ChromeDriver (Selenium 4 lo maneja)
+# Instalar Google Chrome (Selenium 4 usa Selenium Manager
+# para obtener ChromeDriver automáticamente)
 # ------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     wget \
@@ -36,13 +35,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar el JAR compilado
+# Copiar el JAR compilado desde la etapa anterior
 COPY --from=builder /app/app.jar app.jar
 
-# Puerto que Railway asigna dinámicamente
 EXPOSE 8080
 
-# Variables por defecto (Railway las sobreescribe via entorno)
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
