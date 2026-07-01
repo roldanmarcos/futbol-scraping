@@ -41,6 +41,6 @@ public class AppConfig {
     public CacheManagerCustomizer<CaffeineCacheManager> rankingCacheCustomizer() {
         return manager -> manager.registerCustomCache(
                 "ranking",
-                Caffeine.newBuilder().maximumSize(1).build());
+                Caffeine.newBuilder().maximumSize(1).recordStats().build());
     }
 }
